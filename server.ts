@@ -15,7 +15,19 @@ app.set('trust proxy', 1);
 const PORT = 3000;
 
 app.use(cookieParser());
-app.use(express.json({ limit: '50mb' }));
+app.use(
+  express.json({
+    limit: '50mb',
+    // Stash the exact bytes received alongside the parsed body. PayMongo's
+    // webhook signature is an HMAC over the raw request bytes; verifying it
+    // against a re-serialized JSON.stringify(req.body) would silently fail
+    // for the same reason webhook signatures never verify against a
+    // reformatted payload - JSON.stringify does not round-trip byte-for-byte.
+    verify: (req, _res, buf) => {
+      (req as any).rawBody = buf;
+    },
+  })
+);
 app.use(express.urlencoded({ limit: '50mb', extended: true }));
 
 // Apply strict rate limiting to auth endpoints

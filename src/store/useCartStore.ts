@@ -21,7 +21,15 @@ interface CartState {
   addItem: (type: string, quantity: number, configuration?: string) => Promise<void>;
   updateQuantity: (itemId: string, quantity: number) => Promise<void>;
   removeItem: (itemId: string) => Promise<void>;
-  checkout: () => Promise<any>;
+  /**
+   * Starts a real PayMongo checkout session rather than an instant mock
+   * capture. `totalAmount` is the price already shown on screen
+   * (orderCalculations.finalTotal) - the server has no other way to know
+   * what the customer was actually quoted. Returns a hosted checkoutUrl to
+   * redirect the browser to; the cart is NOT cleared here - that only
+   * happens once the PayMongo webhook confirms payment succeeded.
+   */
+  checkout: (totalAmount: number) => Promise<{ checkoutUrl: string; orderId: string }>;
 }
 
 export const useCartStore = create<CartState>((set) => ({
@@ -102,23 +110,24 @@ export const useCartStore = create<CartState>((set) => ({
     }
   },
 
-  checkout: async () => {
+  checkout: async (totalAmount: number) => {
     try {
       set({ isLoading: true, error: null });
       const res = await fetch('/api/commerce/checkout', {
         method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ totalAmount }),
       });
       const data = await res.json();
       if (!res.ok) {
         throw new Error(data.error || 'Checkout failed');
       }
-      // On success, the cart is cleared on the backend, so we update frontend
-      const newCartRes = await fetch('/api/commerce/cart');
-      if (newCartRes.ok) {
-        const newCartData = await newCartRes.json();
-        set({ cart: newCartData.cart, isLoading: false });
-      }
-      return data.order;
+      // Cart is intentionally left alone here - it's only cleared once the
+      // PayMongo webhook confirms the payment actually succeeded. Clearing
+      // it now (before the customer has paid anything) would lose the
+      // design if they abandon the hosted checkout page.
+      set({ isLoading: false });
+      return data as { checkoutUrl: string; orderId: string };
     } catch (e: any) {
       set({ isLoading: false, error: e.message });
       throw e;

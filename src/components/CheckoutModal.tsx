@@ -135,8 +135,12 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
       `  ──────────────────────────────────`,
       `  TOTAL ORDER VALUE: ₱${orderCalculations.finalTotal}`,
       `────────────────────────────────────────`,
-      `📌 Direct Pay GCash: 0917-123-4567 (Artisan Jewelry Studio)`,
-      `Lead Time: 3-5 Working Days. Send transaction receipt via Viber/FB Messenger to commence stringing.`
+      /* Previously printed a GCash number and asked the customer to manually
+         transfer and message proof of payment. Payment is now taken
+         automatically through PayMongo's hosted checkout, so that
+         instruction would tell an already-paid customer to pay again. */
+      `Payment: processed securely via PayMongo (GCash, Maya, or card).`,
+      `Lead Time: 3-5 working days from confirmed payment to commence stringing.`
     ];
     return lines.filter(l => l !== null && l !== undefined).join('\n');
   }, [
@@ -207,19 +211,21 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
             try {
               const configString = JSON.stringify(beads);
               await addItem('CUSTOM_BRACELET', orderQty, configString);
-              showToast('Added to cart — processing checkout');
-              const order = await checkout();
-              showToast('Order placed · ' + order.id, 'success');
-              onClose();
+              showToast('Redirecting to secure payment…');
+              const { checkoutUrl } = await checkout(orderCalculations.finalTotal);
+              // Full navigation, not a client-side route change: the
+              // customer is leaving to PayMongo's hosted payment page and
+              // will be redirected back to /studio?checkout=success|cancelled
+              // once they've paid (or backed out).
+              window.location.href = checkoutUrl;
             } catch (e: any) {
               showToast(e.message || 'Checkout failed');
-            } finally {
               setIsProcessing(false);
             }
           }}
         >
           <ShoppingCart className="h-4 w-4" />
-          {isProcessing ? 'Processing…' : `Place order · ₱${orderCalculations.finalTotal}`}
+          {isProcessing ? 'Redirecting…' : `Pay ₱${orderCalculations.finalTotal}`}
         </Button>
         <Button
           variant="secondary"

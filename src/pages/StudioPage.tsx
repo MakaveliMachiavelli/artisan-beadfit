@@ -1,4 +1,5 @@
 import React, { useState, useMemo, useEffect, lazy } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { useStudioStore } from '../store/useStudioStore';
 import { useCatalogStore } from '../store/useCatalogStore';
 import { useDesignStore } from '../store/useDesignStore';
@@ -70,6 +71,67 @@ export default function StudioPage() {
       fetchCart();
     }
   }, [user]);
+
+  // --- CHECKOUT RETURN TRIP ---
+  // PayMongo redirects the browser back here after the customer pays (or
+  // backs out) on its hosted checkout page. That redirect is a UX signal
+  // only, not proof of payment - the webhook in src/server/commerce.ts is
+  // the actual source of truth and may land slightly after this redirect
+  // does. So this polls the order briefly rather than trusting
+  // `?checkout=success` at face value.
+  const [searchParams, setSearchParams] = useSearchParams();
+  useEffect(() => {
+    const checkoutResult = searchParams.get('checkout');
+    const orderId = searchParams.get('order');
+    if (!checkoutResult || !orderId) return;
+
+    // Strip the params immediately so a page refresh doesn't re-trigger this.
+    setSearchParams(
+      (prev) => {
+        const next = new URLSearchParams(prev);
+        next.delete('checkout');
+        next.delete('order');
+        return next;
+      },
+      { replace: true }
+    );
+
+    if (checkoutResult === 'cancelled') {
+      showToast('Checkout cancelled — your design is still here.');
+      return;
+    }
+
+    if (checkoutResult !== 'success') return;
+
+    let cancelled = false;
+    const pollForPayment = async (attemptsLeft: number) => {
+      if (cancelled) return;
+      try {
+        const res = await fetch(`/api/commerce/orders/${orderId}`);
+        if (res.ok) {
+          const { order } = await res.json();
+          if (order?.status === 'PAID') {
+            showToast(`Payment confirmed · order ${orderId.slice(0, 8)}`);
+            fetchCart(); // the webhook clears the server-side cart on payment
+            return;
+          }
+        }
+      } catch {
+        // network hiccup - fall through to retry below
+      }
+      if (attemptsLeft > 0) {
+        setTimeout(() => pollForPayment(attemptsLeft - 1), 1500);
+      } else {
+        showToast('Payment is processing — this will update shortly.');
+      }
+    };
+    pollForPayment(5);
+
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParams]);
 
   const {
     wristMm, setWristMm,

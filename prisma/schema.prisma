@@ -163,7 +163,7 @@ model OrderItem {
 model Payment {
   id          String    @id @default(uuid())
   orderId     String    @unique
-  provider    String    // STRIPE, PAYPAL
+  provider    String    // PAYMONGO, STRIPE, PAYPAL
   status      String    // AUTHORIZED, CAPTURED, FAILED, REFUNDED
   amount      Float
   referenceId String?   // Gateway reference

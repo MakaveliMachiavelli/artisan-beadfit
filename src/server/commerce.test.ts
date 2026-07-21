@@ -1,10 +1,31 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 import request from 'supertest';
 import express from 'express';
 import cookieParser from 'cookie-parser';
 import { commerceRouter } from './commerce';
 import { authRouter } from './auth';
 import { prisma } from '../db/client';
+
+// Real network calls to PayMongo are neither desirable nor possible in CI -
+// there's no key here. The session id is derived deterministically from the
+// order id (`reference_number`) so the mocked retrieve call can round-trip
+// it without any shared mutable state between the two mock functions.
+vi.mock('./paymongo', () => ({
+  createCheckoutSession: vi.fn(async (_secretKey: string, input: { referenceNumber: string }) => ({
+    id: `cs_test_${input.referenceNumber}`,
+    checkoutUrl: `https://checkout.paymongo.com/cs_test_${input.referenceNumber}`,
+    status: 'active',
+  })),
+  retrieveCheckoutSession: vi.fn(async (_secretKey: string, sessionId: string) => ({
+    id: sessionId,
+    status: 'paid',
+    paymentIntentStatus: 'succeeded',
+    referenceNumber: sessionId.replace('cs_test_', ''),
+  })),
+  verifyWebhookSignature: vi.fn(() => true),
+}));
+
+process.env.PAYMONGO_SECRET_KEY = 'sk_test_dummy_for_tests';
 
 const app = express();
 app.use(cookieParser());
@@ -104,20 +125,45 @@ describe('Commerce API Endpoints', () => {
       configuration: `[{"variantId": "${variant.id}"}]`
     });
 
-    // 4. Checkout
-    const checkoutRes = await request(app).post('/api/commerce/checkout').set('Cookie', cookies);
+    // 4. Start checkout - this only creates a PENDING order and a PayMongo
+    // checkout session now. It used to synchronously return a PAID order;
+    // that was the mock's whole flaw, so this is the correct new shape.
+    const checkoutRes = await request(app)
+      .post('/api/commerce/checkout')
+      .set('Cookie', cookies)
+      .send({ totalAmount: 199.5 });
     if (checkoutRes.status !== 201) {
       console.error(checkoutRes.body);
     }
     expect(checkoutRes.status).toBe(201);
-    expect(checkoutRes.body.order).toBeDefined();
-    
-    const order = checkoutRes.body.order;
-    expect(order.status).toBe('PAID');
-    expect(order.payment).toBeDefined();
-    expect(order.payment.status).toBe('CAPTURED');
+    expect(checkoutRes.body.checkoutUrl).toContain('checkout.paymongo.com');
+    const orderId = checkoutRes.body.orderId;
+    expect(orderId).toBeDefined();
 
-    // 5. Verify Cart is Empty
+    const pendingOrder = await prisma.order.findUnique({
+      where: { id: orderId },
+      include: { payment: true },
+    });
+    expect(pendingOrder?.status).toBe('PENDING');
+    expect(pendingOrder?.payment?.status).toBe('AUTHORIZED');
+
+    // 5. Simulate PayMongo's webhook call once the customer has actually paid
+    // on the hosted checkout page. This is the only thing that should ever
+    // move an order to PAID.
+    const webhookRes = await request(app)
+      .post('/api/commerce/webhooks/paymongo')
+      .send({ data: { id: `cs_test_${orderId}`, attributes: {} } });
+    expect(webhookRes.status).toBe(200);
+
+    const order = await prisma.order.findUnique({
+      where: { id: orderId },
+      include: { payment: true },
+    });
+    expect(order?.status).toBe('PAID');
+    expect(order?.payment?.status).toBe('CAPTURED');
+
+    // 6. Verify Cart is Empty - cleared by the webhook, not by checkout itself,
+    // since checkout no longer knows whether payment will actually complete.
     const cartRes = await request(app).get('/api/commerce/cart').set('Cookie', cookies);
     expect(cartRes.body.cart.items.length).toBe(0);
 
@@ -196,7 +242,8 @@ describe('Commerce API Endpoints', () => {
       
       const reqPromise = request(app)
         .post('/api/commerce/checkout')
-        .set('Cookie', [`guest_session_id=conc-session-${i}; ${cookies[0]}`]); // We need user session and cart session
+        .set('Cookie', [`guest_session_id=conc-session-${i}; ${cookies[0]}`]) // We need user session and cart session
+        .send({ totalAmount: 199.5 });
         
       checkoutPromises.push(reqPromise);
     }
