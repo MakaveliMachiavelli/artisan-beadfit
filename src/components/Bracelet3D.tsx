@@ -357,21 +357,33 @@ export const Bracelet3D: React.FC<Bracelet3DProps> = ({
     };
     animate();
 
+    const applySize = (w: number, h: number) => {
+      if (w === 0 || h === 0) return;
+      renderer.setSize(w, h);
+      camera.aspect = w / h;
+      camera.updateProjectionMatrix();
+    };
+
     const resizeObserver = new ResizeObserver((entries) => {
       for (const entry of entries) {
         const { width: w, height: h } = entry.contentRect;
-        if (w === 0 || h === 0) continue;
-        renderer.setSize(w, h);
-        camera.aspect = w / h;
-        camera.updateProjectionMatrix();
+        applySize(w, h);
       }
     });
     resizeObserver.observe(container);
+
+    /* Fallback for environments where ResizeObserver never delivers (some
+       embedded/automation webviews). Without it the canvas keeps whatever size
+       it had at mount and gets cropped by the container's overflow-hidden —
+       on a phone-width viewport that means a bracelet cut off mid-strand. */
+    const handleWindowResize = () => applySize(container.clientWidth, container.clientHeight);
+    window.addEventListener('resize', handleWindowResize);
 
     // --- teardown: dispose everything, including the WebGL context ---
     return () => {
       cancelAnimationFrame(animationFrameId);
       resizeObserver.disconnect();
+      window.removeEventListener('resize', handleWindowResize);
       renderer.domElement.removeEventListener('pointerdown', handlePointerDown);
       renderer.domElement.removeEventListener('click', handleClick);
       renderer.domElement.removeEventListener('pointermove', handlePointerMove);
@@ -681,17 +693,19 @@ export const Bracelet3D: React.FC<Bracelet3DProps> = ({
 
   if (sceneError) {
     return (
-      <div className="w-full h-full bg-[#f2f2f4] flex items-center justify-center p-8 text-center">
+      <div className="flex h-full w-full items-center justify-center bg-[var(--color-surface-sunken)] p-8 text-center">
         <div>
-          <p className="font-serif text-sm text-obsidian-900">3D preview unavailable</p>
-          <p className="font-mono text-[10px] text-obsidian-400 mt-1">{sceneError}</p>
+          <p className="font-serif text-[17px] font-semibold text-[var(--color-text-primary)]">
+            3D preview unavailable
+          </p>
+          <p className="numeral mt-1.5 text-[12px] text-[var(--color-text-muted)]">{sceneError}</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="relative w-full h-full bg-[#f2f2f4] overflow-hidden">
+    <div className="relative h-full w-full overflow-hidden bg-[var(--color-surface-sunken)]">
       <div ref={containerRef} className="absolute inset-0 cursor-grab active:cursor-grabbing" />
 
       {/* Hover tooltip. State existed in the original component but was never
@@ -704,16 +718,16 @@ export const Bracelet3D: React.FC<Bracelet3DProps> = ({
         }`}
       >
         {hoveredBead && (
-          <div className="bg-white/95 backdrop-blur-md border border-gray-200/70 rounded-md shadow-lg px-3 py-2 max-w-[200px]">
-            <p className="font-serif text-xs font-semibold text-obsidian-900 leading-tight">
+          <div className="max-w-[220px] rounded-[var(--radius-md)] border border-[var(--color-line)] bg-white/95 px-3 py-2.5 shadow-[var(--shadow-e3)] backdrop-blur-md">
+            <p className="font-serif text-[15px] font-semibold leading-tight text-[var(--color-text-primary)]">
               {hoveredBead.name}
             </p>
-            <p className="font-mono text-[9px] text-obsidian-400 mt-0.5">
+            <p className="numeral mt-0.5 text-[11px] text-[var(--color-text-muted)]">
               {hoveredBead.size}mm
               {hoverInfo ? ` · Mohs ${hoverInfo.mohsHardness}` : ''}
             </p>
             {hoverInfo && (
-              <p className="font-sans text-[10px] text-obsidian-600 mt-1 leading-snug">
+              <p className="mt-1.5 text-[12px] leading-snug text-[var(--color-text-secondary)]">
                 {hoverInfo.meaning}
               </p>
             )}
@@ -722,16 +736,16 @@ export const Bracelet3D: React.FC<Bracelet3DProps> = ({
       </div>
 
       {/* Measured frame rate — reported, not estimated. */}
-      <div className="absolute top-4 left-4 z-10 flex items-center gap-2">
+      <div className="absolute left-4 top-4 z-10 flex items-center gap-2">
         {fps !== null && (
-          <span className="font-mono text-[10px] text-gray-500 bg-white/70 backdrop-blur-sm rounded-full px-2.5 py-1 pointer-events-none">
+          <span className="numeral pointer-events-none rounded-full border border-[var(--color-line)] bg-white/80 px-2.5 py-1 text-[11px] font-medium text-[var(--color-text-muted)] backdrop-blur-sm">
             {fps} FPS
           </span>
         )}
         {quality === 'low' && (
           <button
             onClick={() => setQuality('high')}
-            className="font-mono text-[10px] text-amber-700 bg-amber-50/90 border border-amber-200 rounded-full px-2.5 py-1 hover:bg-amber-100 transition-colors cursor-pointer"
+            className="u-interactive rounded-full border border-[color-mix(in_srgb,var(--color-warning-fg)_28%,transparent)] bg-[var(--color-warning-bg)] px-2.5 py-1 text-[11px] font-semibold text-[var(--color-warning-fg)]"
             title="Frame rate stayed below 30 FPS, so gemstone transmission was disabled. Click to restore full quality."
           >
             Performance mode
@@ -739,19 +753,28 @@ export const Bracelet3D: React.FC<Bracelet3DProps> = ({
         )}
       </div>
 
-      <div className="absolute bottom-6 right-6 flex flex-col items-end gap-3 z-10 pointer-events-none">
-        <span className="text-[11px] font-sans text-gray-500 tracking-wide">3D Analysis View</span>
-        <div className="flex items-center bg-white/80 backdrop-blur-md rounded-full px-4 py-2.5 shadow-sm border border-gray-200/50 gap-4 pointer-events-auto">
+      {/* Viewport controls.
+          The previous cluster also contained a "360°" track with a hardcoded
+          `w-1/3` fill and a dot at `left-1/3` — it was bound to no state and
+          responded to no input, so it read as a scrubber while doing nothing.
+          Removed rather than restyled; a control that cannot be operated is
+          worse than no control. Hit areas raised from 20px to 36px. */}
+      <div className="pointer-events-none absolute bottom-5 right-5 z-10 flex flex-col items-end gap-2">
+        <span className="label-micro rounded-full bg-white/70 px-2 py-0.5 backdrop-blur-sm">
+          Drag to orbit · tap a bead to edit
+        </span>
+        <div className="pointer-events-auto flex items-center gap-1 rounded-full border border-[var(--color-line)] bg-white/85 p-1 shadow-[var(--shadow-e2)] backdrop-blur-md">
           <button
             onClick={() => setAutoRotate((v) => !v)}
             title={autoRotate ? 'Pause rotation' : 'Resume rotation'}
             aria-label={autoRotate ? 'Pause rotation' : 'Resume rotation'}
-            className="text-gray-600 hover:text-gray-900 transition-colors cursor-pointer flex items-center justify-center w-5 h-5"
+            aria-pressed={autoRotate}
+            className="u-interactive u-press grid h-9 w-9 place-items-center rounded-full text-[var(--color-text-secondary)] hover:bg-[var(--color-obsidian-100)] hover:text-[var(--color-text-primary)]"
           >
             {autoRotate ? (
-              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="4" width="4" height="16"></rect><rect x="14" y="4" width="4" height="16"></rect></svg>
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="4" width="4" height="16" rx="1"></rect><rect x="14" y="4" width="4" height="16" rx="1"></rect></svg>
             ) : (
-              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><polygon points="6 3 20 12 6 21 6 3"></polygon></svg>
             )}
           </button>
 
@@ -760,21 +783,15 @@ export const Bracelet3D: React.FC<Bracelet3DProps> = ({
             onClick={() => setIsExploded((v) => !v)}
             title={isExploded ? 'Collapse strand' : 'Explode strand'}
             aria-label={isExploded ? 'Collapse strand' : 'Explode strand'}
-            className={`transition-colors cursor-pointer flex items-center justify-center w-5 h-5 ${
-              isExploded ? 'text-gold-600' : 'text-gray-600 hover:text-gray-900'
+            aria-pressed={isExploded}
+            className={`u-interactive u-press grid h-9 w-9 place-items-center rounded-full ${
+              isExploded
+                ? 'bg-[var(--theme-primary)] text-[var(--color-text-onDark)]'
+                : 'text-[var(--color-text-secondary)] hover:bg-[var(--color-obsidian-100)] hover:text-[var(--color-text-primary)]'
             }`}
           >
-            {isExploded ? <Minimize2 className="w-3.5 h-3.5" /> : <Maximize2 className="w-3.5 h-3.5" />}
+            {isExploded ? <Minimize2 className="h-4 w-4" /> : <Maximize2 className="h-4 w-4" />}
           </button>
-
-          <div className="flex items-center gap-2">
-            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-gray-400"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path><path d="M3 3v5h5"></path></svg>
-            <span className="text-[10px] text-gray-400 font-sans tracking-tight">360&deg;</span>
-            <div className="w-24 h-1 bg-gray-200 rounded-full overflow-hidden relative ml-1">
-              <div className="absolute left-0 top-0 h-full bg-gray-400 w-1/3 rounded-full" />
-              <div className="absolute left-1/3 top-1/2 -translate-y-1/2 w-2.5 h-2.5 bg-white border border-gray-300 rounded-full shadow-sm" />
-            </div>
-          </div>
         </div>
       </div>
     </div>

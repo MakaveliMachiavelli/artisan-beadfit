@@ -1,6 +1,7 @@
 import React from 'react';
 import { BeadInstance, CatalogItem } from '../types';
 import { GEMSTONE_DB } from '../data';
+import { Panel } from './ui';
 
 interface Blueprint2DProps {
   beads: BeadInstance[];
@@ -42,9 +43,23 @@ export const Blueprint2D: React.FC<Blueprint2DProps> = ({
   spinSpeed,
 }) => {
   return (
-    <svg 
-                  viewBox="0 0 380 380" 
-                  className="w-full h-full drop-shadow-2xl transition-all duration-300"
+    /* Wrapped to match ExpertAssessment beside it. Previously this returned a
+       bare <svg>, so the two halves of the analysis row read as different
+       kinds of object — one a card, one a floating graphic. */
+    <Panel className="h-full">
+      <div className="flex h-full flex-col gap-4">
+        <div>
+          <h3 className="font-serif text-[20px] font-semibold leading-tight tracking-tight text-[var(--color-text-primary)]">
+            Technical blueprint
+          </h3>
+          <p className="label-micro mt-1">Scale schematic · tap a bead to select</p>
+        </div>
+        <div className="relative flex-1 rounded-[var(--radius-md)] bg-[var(--color-obsidian-900)] p-2">
+    <svg
+                  viewBox="0 0 380 380"
+                  className="h-full w-full"
+                  role="img"
+                  aria-label={`Bracelet schematic: ${beads.length} beads, inner fit ${designStats.innerFit.toFixed(1)} millimetres`}
                 >
                   <defs>
                     {/* Shadow Filter */}
@@ -409,22 +424,31 @@ export const Blueprint2D: React.FC<Blueprint2DProps> = ({
 
                   {/* Inner technical measurements readout in middle */}
                   <g>
-                    <text x="190" y="180" textAnchor="middle" className={`font-mono text-[9px] uppercase tracking-[0.2em] ${
-                      xrayMode ? 'fill-slate-400' : 'fill-obsidian-400'
+                    {/* 9px was below the readable floor for a value this
+                        important; raised and given a lighter tracking so the
+                        figure reads as a headline rather than a caption. */}
+                    <text x="190" y="178" textAnchor="middle" className={`font-mono text-[11px] uppercase tracking-[0.16em] ${
+                      xrayMode ? 'fill-slate-300' : 'fill-obsidian-500'
                     }`}>
-                      Calc Inner Fit
+                      Inner fit
                     </text>
-                    <text x="190" y="202" textAnchor="middle" className={`font-serif text-2xl font-bold ${
-                      xrayMode ? 'fill-white' : 'fill-obsidian-950'
+                    <text x="190" y="204" textAnchor="middle" className={`font-sans text-[26px] font-semibold tracking-tight ${
+                      xrayMode ? 'fill-white' : 'fill-obsidian-900'
                     }`}>
                       {designStats.innerFit.toFixed(1)}mm
                     </text>
-                    <text x="190" y="218" textAnchor="middle" className={`font-mono text-[9px] tracking-[0.18em] uppercase font-semibold ${
-                      designStats.status === 'perfect' ? 'fill-emerald-500' : 'fill-amber-500'
+                    {/* Light-on-dark variants. The --color-success-fg /
+                        --color-warning-fg tokens are tuned for the paper
+                        surface and drop to ~2.9:1 against this dark panel. */}
+                    <text x="190" y="222" textAnchor="middle" className={`font-mono text-[11px] font-semibold tracking-[0.08em] ${
+                      designStats.status === 'perfect' ? 'fill-[#6ee7b7]' : 'fill-[#fcd34d]'
                     }`}>
                       {designStats.discrepancy >= 0 ? '+' : ''}{designStats.discrepancy.toFixed(1)}mm gap
                     </text>
                   </g>
                 </svg>
+        </div>
+      </div>
+    </Panel>
   );
 };

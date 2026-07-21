@@ -41,29 +41,29 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
     return (
       <div
         role="alert"
-        className={`glass-panel border hairline border-obsidian-200/50 rounded-sm bg-white/60 flex flex-col items-center justify-center text-center gap-3 ${
-          compact ? 'p-4' : 'p-8 h-full min-h-[180px]'
+        className={`panel flex flex-col items-center justify-center gap-3 text-center ${
+          compact ? 'p-4' : 'h-full min-h-[180px] p-8'
         }`}
       >
-        <div className="w-9 h-9 rounded-full bg-amber-50 border border-amber-200 flex items-center justify-center text-amber-600">
-          <AlertTriangle className="w-4 h-4" />
+        <div className="grid h-9 w-9 place-items-center rounded-full border border-[color-mix(in_srgb,var(--color-warning-fg)_25%,transparent)] bg-[var(--color-warning-bg)] text-[var(--color-warning-fg)]">
+          <AlertTriangle className="h-4 w-4" />
         </div>
         <div>
-          <h4 className="font-serif text-sm font-semibold text-obsidian-900">
+          <h4 className="font-serif text-[16px] font-semibold text-[var(--color-text-primary)]">
             {label} could not be displayed
           </h4>
-          <p className="font-mono text-[10px] text-obsidian-400 mt-1 max-w-xs break-words">
+          <p className="numeral mt-1 max-w-xs break-words text-[11px] text-[var(--color-text-muted)]">
             {error.message || 'Unknown error'}
           </p>
-          <p className="font-sans text-[11px] text-obsidian-500 mt-2">
+          <p className="mt-2 text-[12px] text-[var(--color-text-secondary)]">
             The rest of the studio is still usable.
           </p>
         </div>
         <button
           onClick={this.handleRetry}
-          className="flex items-center gap-1.5 px-3.5 py-1.5 border hairline border-obsidian-200/50 rounded-sm font-mono text-[10px] uppercase tracking-[0.18em] text-obsidian-600 hover:text-[var(--theme-primary)] hover:border-gold-400 transition-all"
+          className="u-interactive u-press inline-flex items-center gap-1.5 rounded-[var(--radius-sm)] border border-[var(--color-line-strong)] bg-white/70 px-3.5 py-2 text-[12px] font-semibold text-[var(--color-text-secondary)] hover:border-[var(--color-gold-400)] hover:text-[var(--color-text-primary)]"
         >
-          <RefreshCw className="w-3 h-3" />
+          <RefreshCw className="h-3.5 w-3.5" />
           Retry
         </button>
       </div>
@@ -86,14 +86,17 @@ export const SafeSection: React.FC<SafeSectionProps> = ({ label, children, compa
     <Suspense
       fallback={
         fallback ?? (
+          /* A shaped skeleton rather than a text string, so the layout does not
+             jump when the real panel arrives. */
           <div
-            className={`glass-panel border hairline border-obsidian-200/50 rounded-sm bg-white/40 flex items-center justify-center ${
-              compact ? 'p-4' : 'p-8 h-full min-h-[180px]'
-            }`}
+            aria-busy="true"
+            aria-label={`Loading ${label}`}
+            className={`panel ${compact ? 'p-4' : 'h-full min-h-[180px] p-6'}`}
           >
-            <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-obsidian-400 animate-pulse">
-              Loading {label}…
-            </span>
+            <div className="ab-skeleton h-3 w-1/3 rounded-full" />
+            <div className="ab-skeleton mt-3 h-2.5 w-2/3 rounded-full" />
+            <div className="ab-skeleton mt-5 h-9 w-full rounded-[var(--radius-sm)]" />
+            <div className="ab-skeleton mt-2 h-9 w-full rounded-[var(--radius-sm)]" />
           </div>
         )
       }

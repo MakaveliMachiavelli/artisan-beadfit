@@ -2,9 +2,10 @@ import React, { useState, useMemo } from 'react';
 import { BeadInstance, CatalogItem, Voucher } from '../types';
 import { ADDON_OPTIONS, REGIONS, DEFAULT_VOUCHERS, GEMSTONE_DB } from '../data';
 import { calculateOrderTotal } from '../pricing';
-import { Copy, Share2, Check, Package, ShoppingCart } from 'lucide-react';
+import { Copy, ShoppingCart } from 'lucide-react';
 import { useCartStore } from '../store/useCartStore';
 import { useAuthStore } from '../store/useAuthStore';
+import { ModalShell, Button } from './ui';
 
 interface CheckoutModalProps {
   isOpen: boolean;
@@ -185,71 +186,113 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
 
   if (!isOpen) return null;
 
-  return (
-      <div className="fixed inset-0 bg-obsidian-950/40 backdrop-blur-sm z-50 flex justify-end">
-          <div className="glass-panel w-full max-w-xl h-full shadow-2xl flex flex-col overflow-hidden">
-            {/* Modal Header */} 
-            <div className="p-6 border-b hairline border-obsidian-200/50 flex justify-between items-center glass-panel">
-              <div>
-                <span className="font-mono text-[10px] tracking-[0.18em] text-gold-600 uppercase font-bold">Checkout Dispatch</span>
-                <h3 className="font-serif text-2xl font-bold text-obsidian-950">Direct Studio Order</h3>
-              </div>
-              <button onClick={() => onClose()} className="w-10 h-10 rounded-full hover:glass-panel flex items-center justify-center text-obsidian-500 transition-colors">
-                ✕
-              </button>
-            </div>
+  /* Footer is passed to ModalShell rather than rendered inline, so the primary
+     action stays pinned while the long form scrolls behind it. */
+  const footer = (
+    <div className="space-y-3">
+      {!user && (
+        <p className="text-center text-[12px] text-[var(--color-text-muted)]">
+          Sign in to place this order — your design is kept while you do.
+        </p>
+      )}
+      <div className="flex gap-2">
+        <Button
+          variant="primary"
+          size="lg"
+          className="flex-1"
+          disabled={!user || isProcessing}
+          onClick={async () => {
+            if (!user) return;
+            setIsProcessing(true);
+            try {
+              const configString = JSON.stringify(beads);
+              await addItem('CUSTOM_BRACELET', orderQty, configString);
+              showToast('Added to cart — processing checkout');
+              const order = await checkout();
+              showToast('Order placed · ' + order.id, 'success');
+              onClose();
+            } catch (e: any) {
+              showToast(e.message || 'Checkout failed');
+            } finally {
+              setIsProcessing(false);
+            }
+          }}
+        >
+          <ShoppingCart className="h-4 w-4" />
+          {isProcessing ? 'Processing…' : `Place order · ₱${orderCalculations.finalTotal}`}
+        </Button>
+        <Button
+          variant="secondary"
+          size="lg"
+          aria-label="Copy order sheet"
+          title="Copy order sheet"
+          onClick={() => handleCopyToClipboard(orderView === 'customer' ? customerOrderSheetText : benchSheetText)}
+        >
+          <Copy className="h-4 w-4" />
+        </Button>
+      </div>
+    </div>
+  );
 
-            {/* Modal Body */}
-            <div className="flex-1 overflow-y-auto p-6 space-y-6">
+  return (
+    <ModalShell
+      open={isOpen}
+      onClose={onClose}
+      size="md"
+      title="Direct studio order"
+      subtitle="Bespoke piece · made to your measurements"
+      footer={footer}
+    >
+            <div className="space-y-6">
               
               {/* Customer Contact Fields */}
               <div className="space-y-4">
-                <h4 className="font-serif text-base font-bold text-obsidian-950 border-b hairline border-obsidian-200/50 pb-2">
+                <h4 className="font-serif text-base font-bold text-obsidian-950 border-b border-[var(--color-line)] pb-2">
                   1. Client Logistics
                 </h4>
                 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-1">
-                    <label className="block text-[10px] font-mono uppercase tracking-[0.18em] text-obsidian-400">Recipient Name</label>
+                    <label className="label-micro block">Recipient Name</label>
                     <input 
                       type="text" 
                       placeholder="e.g., Maria Santos"
                       value={orderName}
                       onChange={(e) => setOrderName(e.target.value)}
-                      className="w-full glass-panel/30 border hairline border-obsidian-200/50 px-3 py-2.5 rounded-sm text-sm text-obsidian-950 focus:outline-none focus:border-gold-500"
+                      className="w-full bg-white/60 border border-[var(--color-line)] px-3 py-2.5 rounded-sm text-sm text-obsidian-950 focus:outline-none focus:border-[var(--color-gold-600)]"
                     />
                   </div>
                   
                   <div className="space-y-1">
-                    <label className="block text-[10px] font-mono uppercase tracking-[0.18em] text-obsidian-400">Viber / FB Messenger / Contact</label>
+                    <label className="label-micro block">Viber / FB Messenger / Contact</label>
                     <input 
                       type="text" 
                       placeholder="e.g., 0917-XXX-XXXX or @maria"
                       value={orderContact}
                       onChange={(e) => setOrderContact(e.target.value)}
-                      className="w-full glass-panel/30 border hairline border-obsidian-200/50 px-3 py-2.5 rounded-sm text-sm text-obsidian-950 focus:outline-none focus:border-gold-500"
+                      className="w-full bg-white/60 border border-[var(--color-line)] px-3 py-2.5 rounded-sm text-sm text-obsidian-950 focus:outline-none focus:border-[var(--color-gold-600)]"
                     />
                   </div>
                 </div>
 
                 <div className="space-y-1">
-                  <label className="block text-[10px] font-mono uppercase tracking-[0.18em] text-obsidian-400">Delivery Address</label>
+                  <label className="label-micro block">Delivery Address</label>
                   <textarea 
                     rows={2}
                     placeholder="Unit/House No., Street name, Barangay, City, Province, ZIP Code"
                     value={orderAddress}
                     onChange={(e) => setOrderAddress(e.target.value)}
-                    className="w-full glass-panel/30 border hairline border-obsidian-200/50 px-3 py-2.5 rounded-sm text-sm text-obsidian-950 focus:outline-none focus:border-gold-500 resize-none"
+                    className="w-full bg-white/60 border border-[var(--color-line)] px-3 py-2.5 rounded-sm text-sm text-obsidian-950 focus:outline-none focus:border-[var(--color-gold-600)] resize-none"
                   />
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-1">
-                    <label className="block text-[10px] font-mono uppercase tracking-[0.18em] text-obsidian-400">Shipping Region</label>
+                    <label className="label-micro block">Shipping Region</label>
                     <select
                       value={orderRegion}
                       onChange={(e) => setOrderRegion(e.target.value)}
-                      className="w-full glass-panel/30 border hairline border-obsidian-200/50 px-3 py-2.5 rounded-sm text-sm text-obsidian-950 focus:outline-none focus:border-gold-500"
+                      className="w-full bg-white/60 border border-[var(--color-line)] px-3 py-2.5 rounded-sm text-sm text-obsidian-950 focus:outline-none focus:border-[var(--color-gold-600)]"
                     >
                       {Object.keys(REGIONS).map(r => (
                         <option key={r} value={r}>{r} (+₱{REGIONS[r]})</option>
@@ -258,8 +301,8 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
                   </div>
 
                   <div className="space-y-1">
-                    <label className="block text-[10px] font-mono uppercase tracking-[0.18em] text-obsidian-400">Quantity</label>
-                    <div className="flex items-center border hairline border-obsidian-200/50 rounded-sm overflow-hidden glass-panel/30">
+                    <label className="label-micro block">Quantity</label>
+                    <div className="flex items-center border border-[var(--color-line)] rounded-sm overflow-hidden bg-white/60">
                       <button 
                         onClick={() => setOrderQty(Math.max(1, orderQty - 1))}
                         className="px-3 py-2.5 hover:glass-panel text-obsidian-600 font-bold"
@@ -285,7 +328,7 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
 
               {/* Addons Selection Checklist */}
               <div className="space-y-4">
-                <h4 className="font-serif text-base font-bold text-obsidian-950 border-b hairline border-obsidian-200/50 pb-2">
+                <h4 className="font-serif text-base font-bold text-obsidian-950 border-b border-[var(--color-line)] pb-2">
                   2. Luxury Finishing & Packing Options
                 </h4>
 
@@ -297,8 +340,8 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
                         key={addon.id}
                         className={`flex items-start gap-3 p-3.5 border rounded-sm cursor-pointer transition-all ${
                           checked 
-                            ? 'border-gold-500 glass-panel/30' 
-                            : 'hairline border-obsidian-200/50 hover:border-gold-400'
+                            ? 'border-gold-500 bg-white/60' 
+                            : 'border-[var(--color-line)] hover:border-gold-400'
                         }`}
                       >
                         <input 
@@ -322,7 +365,7 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
 
               {/* Coupon / Voucher Codes */}
               <div className="space-y-4">
-                <h4 className="font-serif text-base font-bold text-obsidian-950 border-b hairline border-obsidian-200/50 pb-2">
+                <h4 className="font-serif text-base font-bold text-obsidian-950 border-b border-[var(--color-line)] pb-2">
                   3. Promotional Studio Voucher
                 </h4>
 
@@ -332,7 +375,7 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
                     placeholder="Enter Voucher (e.g., ARTISAN10)"
                     value={voucherCode}
                     onChange={(e) => setVoucherCode(e.target.value)}
-                    className="flex-1 glass-panel/30 border hairline border-obsidian-200/50 px-3 py-2 rounded-sm text-sm focus:outline-none"
+                    className="flex-1 bg-white/60 border border-[var(--color-line)] px-3 py-2 rounded-sm text-sm focus:outline-none"
                   />
                   <button 
                     onClick={handleApplyVoucher}
@@ -342,29 +385,34 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
                   </button>
                 </div>
                 {voucherError && (
-                  <p className="text-[10px] font-mono uppercase tracking-[0.15em] text-rose-500">{voucherError}</p>
+                  <p role="alert" className="text-[12px] font-medium text-[var(--color-danger-fg)]">
+                    {voucherError}
+                  </p>
                 )}
                 {appliedVoucher && (
-                  <p className="text-[10px] font-mono uppercase tracking-[0.15em] text-emerald-600">
-                    Active Promotion: {appliedVoucher.code} ({appliedVoucher.type === 'percent' ? `${appliedVoucher.value}% Off` : `₱${appliedVoucher.value} Off`})
+                  <p role="status" className="text-[12px] font-medium text-[var(--color-success-fg)]">
+                    {appliedVoucher.code} applied ·{' '}
+                    {appliedVoucher.type === 'percent'
+                      ? `${appliedVoucher.value}% off`
+                      : `₱${appliedVoucher.value} off`}
                   </p>
                 )}
               </div>
 
               {/* Order Notes */}
               <div className="space-y-2">
-                <label className="block text-[10px] font-mono uppercase tracking-[0.18em] text-obsidian-400">Additional Sizing or Structural Instructions</label>
+                <label className="label-micro block">Additional Sizing or Structural Instructions</label>
                 <textarea 
                   rows={2}
                   placeholder="e.g., Place the Jade Pendant exactly at the opposite end of the clasp."
                   value={orderNotes}
                   onChange={(e) => setOrderNotes(e.target.value)}
-                  className="w-full glass-panel/30 border hairline border-obsidian-200/50 px-3 py-2.5 rounded-sm text-sm focus:outline-none resize-none"
+                  className="w-full bg-white/60 border border-[var(--color-line)] px-3 py-2.5 rounded-sm text-sm focus:outline-none resize-none"
                 />
               </div>
 
               {/* Real-time Order calculations readout */}
-              <div className="glass-panel border hairline border-obsidian-200/50 p-5 rounded-sm space-y-3 font-mono text-[10px] uppercase tracking-[0.18em]">
+              <div className="glass-panel border border-[var(--color-line)] p-5 rounded-sm space-y-3 font-mono text-[10px] uppercase tracking-[0.18em]">
                 <div className="flex justify-between">
                   <span>Bespoke Bracelet ({beads.length} Beads) × {orderQty}</span>
                   <span className="font-serif text-lg font-bold text-obsidian-900">₱{orderCalculations.subtotal}</span>
@@ -389,7 +437,7 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
                   <span>Shipping Courier ({orderRegion})</span>
                   <span className="font-serif text-base font-bold text-obsidian-900">₱{orderCalculations.shipping}</span>
                 </div>
-                <hr className="hairline border-obsidian-200/50" />
+                <hr className="border-[var(--color-line)]" />
                 <div className="flex justify-between text-sm font-serif font-bold text-obsidian-950">
                   <span>Grand Total</span>
                   <span>₱{orderCalculations.finalTotal}</span>
@@ -397,7 +445,7 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
               </div>
 
               {/* Sheet choice toggles */}
-              <div className="flex glass-panel p-1 rounded-sm hairline border-obsidian-200/50">
+              <div className="flex glass-panel p-1 rounded-sm border-[var(--color-line)]">
                 <button
                   onClick={() => setOrderView('customer')}
                   className={`flex-1 py-1.5 text-xs font-mono rounded-sm transition-all ${
@@ -417,56 +465,11 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
               </div>
 
               {/* Output block */}
-              <div className="bg-obsidian-950 text-gold-100 p-4 rounded-sm text-xs font-mono whitespace-pre overflow-x-auto max-h-60 shadow-inner">
+              <pre className="scroll-area max-h-60 overflow-x-auto rounded-[var(--radius-md)] bg-[var(--color-obsidian-950)] p-4 text-[11px] leading-relaxed text-[var(--color-gold-100)] shadow-inner">
                 {orderView === 'customer' ? customerOrderSheetText : benchSheetText}
-              </div>
+              </pre>
 
             </div>
-
-            {/* Modal Footer actions */}
-            <div className="p-6 border-t hairline border-obsidian-200/50 flex flex-col gap-3 glass-panel/20">
-              {!user && (
-                <div className="text-xs text-center text-obsidian-500 font-mono mb-2">
-                  Please close this modal and sign in to place your order.
-                </div>
-              )}
-              <div className="flex gap-3">
-                <button
-                  disabled={!user || isProcessing}
-                  onClick={async () => {
-                    if (!user) return;
-                    setIsProcessing(true);
-                    try {
-                      // Serialize beads configuration
-                      // In a real app we would map this to the exact Variant IDs.
-                      // For now, we just pass the raw beads list as configuration.
-                      const configString = JSON.stringify(beads);
-                      await addItem('CUSTOM_BRACELET', orderQty, configString);
-                      showToast('Added to Cart! Processing Checkout...');
-                      
-                      const order = await checkout();
-                      showToast('Checkout Complete! Order ID: ' + order.id, 'success');
-                      onClose();
-                    } catch (e: any) {
-                      showToast(e.message || 'Checkout failed');
-                    } finally {
-                      setIsProcessing(false);
-                    }
-                  }}
-                  className="flex-1 bg-[var(--theme-primary)] hover:brightness-110 text-gold-100 text-sm font-semibold py-3.5 rounded-sm transition-all flex items-center justify-center gap-2 shadow-md disabled:opacity-50"
-                >
-                  <ShoppingCart className="w-4 h-4" />
-                  {isProcessing ? 'Processing...' : 'Add to Cart & Checkout'}
-                </button>
-                <button
-                  onClick={() => handleCopyToClipboard(orderView === 'customer' ? customerOrderSheetText : benchSheetText)}
-                  className="glass-panel border border-gold-300 text-gold-800 hover:glass-panel text-sm font-semibold px-4 rounded-sm"
-                >
-                  <Copy className="w-4 h-4" />
-                </button>
-              </div>
-            </div>
-          </div>
-      </div>
+    </ModalShell>
   );
 };

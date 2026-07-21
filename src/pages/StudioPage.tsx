@@ -2,40 +2,9 @@ import React, { useState, useMemo, useEffect, lazy } from 'react';
 import { useStudioStore } from '../store/useStudioStore';
 import { useCatalogStore } from '../store/useCatalogStore';
 import { useDesignStore } from '../store/useDesignStore';
-import { 
-  Sparkles, 
-  ShieldCheck, 
-  Eye, 
-  Settings, 
-  Package, 
-  Coins, 
-  Plus, 
-  Minus, 
-  Info, 
-  Lock, 
-  Unlock, 
-  Copy, 
-  Share2, 
-  Check, 
-  RotateCcw, 
-  ChevronRight,
-  Sliders,
-  Sparkle,
-  ShoppingBag,
-  HelpCircle,
-  TrendingUp,
-  Award,
-  Video,
-  Upload,
-  Play,
-  Film,
-  RefreshCw,
-  Download,
-  AlertCircle,
-  Clock,
-  RotateCw,
-  Maximize2
-} from 'lucide-react';
+/* Only the icons this file actually renders. The previous list imported 35 and
+   used 5; the rest were dead weight in the lucide chunk. */
+import { Sparkles, LogOut, User, Check } from 'lucide-react';
 import { BeadInstance, CatalogItem, DesignPreset, AddonOption, Voucher } from '../types';
 import { 
   GEMSTONE_DB, 
@@ -46,17 +15,16 @@ import {
   SIZES 
 } from '../data';
 import { analyzeBeadDesign, generateGoldenRatioSequence } from '../utils';
-import { calculateBraceletFit } from '../braceletFit';
+import { calculateBraceletFit, clampWristMm } from '../braceletFit';
 import { calculateBasePrice } from '../pricing';
 import { calculateBlueprintMetrics, calculateBeadCountForCircumference, calculateInnerFit } from '../geometry';
 import { injectFocalWord, addBeadSymmetrically, removeBeadSymmetrically } from '../symmetry';
 import { useAuthStore } from "../store/useAuthStore";
 import { useCartStore } from "../store/useCartStore";
 import { useSavedDesignsStore } from "../store/useSavedDesignsStore";
-import { Save } from "lucide-react";
 import { AuthModal } from "../components/AuthModal";
 import { SafeSection, ErrorBoundary } from "../components/ErrorBoundary";
-import { LogOut, User } from "lucide-react";
+import { Button, IconButton } from "../components/ui";
 
 // NOTE: these are deliberately bare `lazy()` calls, NOT wrapped in
 // `(props: any) => ...`. That wrapper erased every prop contract in this file
@@ -77,9 +45,10 @@ const CheckoutModal = lazy(() => import('../components/CheckoutModal').then(m =>
 export default function StudioPage() {
   // --- STATE ---
   const { user, checkSession, logout } = useAuthStore();
-  const { fetchCart, cart } = useCartStore();
-  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
-  const { designs, fetchDesigns, saveDesign } = useSavedDesignsStore();
+  const { fetchCart } = useCartStore();
+  /* `isAuthModalOpen` used to be declared here alongside `isAuthOpen` below;
+     only the latter was ever read or written. */
+  const { fetchDesigns } = useSavedDesignsStore();
 
   // Initial load of default preset
   useEffect(() => {
@@ -656,72 +625,107 @@ export default function StudioPage() {
     setTimeout(() => setToastMsg(''), 2500);
   };
 
-  const formattedWristVal = () => {
-    if (unit === 'cm') return (wristMm / 10).toFixed(1);
-    if (unit === 'in') return (wristMm / 25.4).toFixed(2);
-    return wristMm.toString();
-  };
+  /* The wrist field and its clamp live in FitCalibrationPanel; this page only
+     needs the shared bounds when normalising an out-of-range stored value. */
+  useEffect(() => {
+    const clamped = clampWristMm(wristMm);
+    if (clamped !== wristMm) setWristMm(clamped);
+  }, [wristMm, setWristMm]);
 
-  const handleWristInputChange = (val: string) => {
-    const parsed = parseFloat(val);
-    if (isNaN(parsed)) return;
+  const currencyFmt = useMemo(
+    () => new Intl.NumberFormat('en-PH', { style: 'currency', currency: 'PHP', maximumFractionDigits: 0 }),
+    []
+  );
 
-    let targetMm = parsed;
-    if (unit === 'cm') targetMm = parsed * 10;
-    else if (unit === 'in') targetMm = parsed * 25.4;
-
-    // Bounds safety
-    if (targetMm < 110) targetMm = 110;
-    if (targetMm > 230) targetMm = 230;
-
-    setWristMm(Math.round(targetMm));
-  };
-
+  const fitTone =
+    designStats.status === 'perfect' ? 'success' : designStats.status === 'tight' ? 'danger' : 'warning';
+  const fitLabel =
+    designStats.status === 'perfect'
+      ? 'Optimal fit'
+      : designStats.status === 'tight'
+        ? 'Runs tight'
+        : 'Runs loose';
 
   return (
     <>
-      <div className="min-h-screen pb-16 px-4 md:px-8 max-w-7xl mx-auto relative z-10">
-      {/* Toast Notification */}
-      {toastMsg && (
-        <div className="fixed bottom-6 left-1/2 transform -translate-x-1/2 z-50 bg-[var(--theme-primary)] text-gold-100 border border-gold-300 px-6 py-3 rounded-full text-sm font-mono shadow-xl transition-all duration-300">
-          ✨ {toastMsg}
-        </div>
-      )}
+      {/* Toast — polite live region so the message is announced, not just seen.
+          Previously a bare div with no role, invisible to screen readers. */}
+      <div
+        role="status"
+        aria-live="polite"
+        className="pointer-events-none fixed bottom-6 left-1/2 z-[120] -translate-x-1/2"
+      >
+        {toastMsg && (
+          <div className="ab-rise flex items-center gap-2 rounded-full border border-white/10 bg-[var(--color-obsidian-950)] px-4 py-2.5 text-[13px] font-medium text-[var(--color-text-onDark)] shadow-[var(--shadow-e4)]">
+            <Check className="h-4 w-4 text-[var(--color-gold-400)]" />
+            {toastMsg}
+          </div>
+        )}
+      </div>
 
-      {/* Header section */}
-      <header className="py-8 text-center md:text-left border-b hairline border-obsidian-200/50 mb-10 flex flex-col md:flex-row justify-between items-center gap-6">
-        <div>
-          <span className="font-mono text-[10px] tracking-[0.3em] text-gold-500 font-semibold">Est. 2024 • Bespoke Jewelry Studio</span>
-          <h1 className="font-serif text-4xl md:text-5xl font-light tracking-tighter italic text-[var(--theme-primary)] mt-2">
-            Artisan Beadfit
-          </h1>
-          <p className="font-sans text-sm text-obsidian-500 mt-2 max-w-xl leading-relaxed">
-            Crafting tactile gemstone connections. Calibrate mineral geometries to your precise wrist proportions, visualize physical clearance, and dispatch direct orders.
-          </p>
-        </div>
-        <div className="flex items-center gap-4">
-          <button onClick={() => setIsOrderOpen(true)} className="px-6 py-3 bg-[var(--theme-primary)] text-white hover:opacity-90 font-mono text-xs uppercase tracking-widest rounded-sm transition-all shadow-md">
-            Review Design
-          </button>
-          <button onClick={() => setIsAdminOpen(true)} className="p-2 border hairline border-obsidian-200/50 text-obsidian-600 hover:text-[var(--theme-primary)] rounded-sm glass-panel transition-all" title="Studio Terminal">
-            <Sparkles className="w-5 h-5" />
-          </button>
-          {user ? (
-            <button onClick={logout} className="p-2 border hairline border-obsidian-200/50 text-obsidian-600 hover:text-red-500 rounded-sm glass-panel transition-all" title="Log Out">
-              <LogOut className="w-5 h-5" />
-            </button>
-          ) : (
-            <button onClick={() => setIsAuthOpen(true)} className="p-2 border hairline border-obsidian-200/50 text-obsidian-600 hover:text-[var(--theme-primary)] rounded-sm glass-panel transition-all" title="Log In">
-              <User className="w-5 h-5" />
-            </button>
-          )}
-        </div>
-      </header>
+      {/* Skip link — first tab stop, previously absent.
+          Uses a dedicated class rather than `focus:not-sr-only`, which is
+          Tailwind's counterpart to its own `sr-only` and does not unwind the
+          clip/1px sizing applied by `.sr-only-x`. */}
+      <a href="#studio-preview" className="skip-link">
+        Skip to preview
+      </a>
 
-      {/* Main Studio Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start relative">
+      <div className="relative z-10 min-h-screen">
+        {/* ---------------------------------------------------------------- */}
+        {/* Header                                                           */}
+        {/* ---------------------------------------------------------------- */}
+        <header className="sticky top-0 z-40 border-b border-[var(--color-line)] bg-[color-mix(in_srgb,var(--color-obsidian-50)_82%,transparent)] backdrop-blur-xl">
+          <div className="mx-auto flex max-w-[1600px] items-center gap-4 px-4 py-3 sm:px-6 lg:px-8">
+            <div className="min-w-0 flex-1">
+              <h1 className="truncate font-serif text-[21px] font-semibold leading-none tracking-tight text-[var(--theme-primary)]">
+                Artisan Beadfit
+              </h1>
+              <p className="label-micro mt-1 hidden sm:block">Bespoke gemstone studio</p>
+            </div>
+
+            {/* Running total. A configurator that hides its price until the
+                checkout modal makes people guess; this keeps it in view. */}
+            <div className="hidden items-baseline gap-2 rounded-full border border-[var(--color-line)] bg-white/60 px-4 py-2 md:flex">
+              <span className="label-micro">Est.</span>
+              <span className="numeral text-[16px] font-semibold leading-none text-[var(--theme-primary)]">
+                {currencyFmt.format(designStats.price)}
+              </span>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <Button variant="primary" size="md" onClick={() => setIsOrderOpen(true)}>
+                Review design
+              </Button>
+              <IconButton label="Studio terminal" onClick={() => setIsAdminOpen(true)}>
+                <Sparkles className="h-[18px] w-[18px]" />
+              </IconButton>
+              {user ? (
+                <IconButton label={`Sign out (${user.email ?? 'account'})`} onClick={logout}>
+                  <LogOut className="h-[18px] w-[18px]" />
+                </IconButton>
+              ) : (
+                <IconButton label="Sign in" onClick={() => setIsAuthOpen(true)}>
+                  <User className="h-[18px] w-[18px]" />
+                </IconButton>
+              )}
+            </div>
+          </div>
+        </header>
+
+        <div className="mx-auto max-w-[1600px] px-4 pb-24 pt-6 sm:px-6 lg:px-8">
+
+      {/* Main Studio Grid.
+          Controls scroll on the left; the preview is sticky on the right so the
+          object being configured stays in view. Previously both columns scrolled
+          together and the 3D stage — the whole point of the page — left the
+          viewport as soon as you reached the spacer controls. */}
+      <div className="relative grid grid-cols-1 items-start gap-6 lg:grid-cols-12">
         {/* Left Column: Gemstone & Styling Controls */}
-        <div className="lg:col-span-4 space-y-6">
+        {/* order-2 on small screens puts the preview above the controls, so a
+            phone user sees the piece before the configuration; on lg the
+            columns take their natural left/right positions. */}
+        <div className="order-2 space-y-4 lg:order-1 lg:col-span-5">
           <SafeSection label="Gemstone selector">
           <GemstoneSelectorPanel
             gemstoneNames={gemstoneNames}
@@ -776,78 +780,144 @@ export default function StudioPage() {
           </SafeSection>
         </div>
 
-        {/* Center Column: 3D Visualization */}
-        <div className="lg:col-span-8 flex flex-col gap-6">
-          {/* Main 3D Stage */}
-          <div className="h-[60vh] lg:h-[70vh] rounded-xl overflow-hidden shadow-2xl border hairline border-obsidian-200/50 bg-[#f2f2f4]">
-            <SafeSection label="3D preview">
-              <Bracelet3D
-                beads={beads}
-                activeCharm={activeCharm}
-                selectedBeadIndex={selectedBeadIndex}
-                setSelectedBeadIndex={setSelectedBeadIndex}
-                blueprintRadius={(wristMm + ease) / (2 * Math.PI) / 10}
-                wristMm={wristMm}
-                ease={ease}
-              />
-            </SafeSection>
-          </div>
+        {/* Right Column: the piece itself, pinned while the controls scroll */}
+        <div
+          id="studio-preview"
+          className="order-1 lg:order-2 lg:sticky lg:top-[76px] lg:col-span-7"
+        >
+          <div className="panel overflow-hidden p-0">
+            <div className="h-[52vh] min-h-[340px] bg-[var(--color-surface-sunken)] lg:h-[calc(100vh-13rem)]">
+              <SafeSection label="3D preview">
+                <Bracelet3D
+                  beads={beads}
+                  activeCharm={activeCharm}
+                  selectedBeadIndex={selectedBeadIndex}
+                  setSelectedBeadIndex={setSelectedBeadIndex}
+                  blueprintRadius={(wristMm + ease) / (2 * Math.PI) / 10}
+                  wristMm={wristMm}
+                  ease={ease}
+                />
+              </SafeSection>
+            </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <SafeSection label="2D blueprint">
-            <Blueprint2D
-               beads={beads}
-               gemstoneNames={gemstoneNames}
-               xrayMode={true}
-               designStats={designStats}
-               isSpinning={false}
-               manualAngle={manualAngle}
-               activeCharm={activeCharm}
-               selectedBeadIndex={selectedBeadIndex}
-               setSelectedBeadIndex={setSelectedBeadIndex}
-               wristMm={wristMm}
-               spinSpeed={spinSpeed}
-               blueprintMetrics={blueprintMetrics}
-            />
-            </SafeSection>
-            <SafeSection label="Expert assessment">
-            <ExpertAssessment
-               expertAnalysis={expertAnalysis}
-            />
-            </SafeSection>
-          </div>
-          
-          {/* Presets Gallery (from original UI) */}
-          <div className="mt-8 border hairline border-obsidian-200/50 p-6 rounded-sm glass-panel bg-white/40">
-            <h3 className="font-serif text-lg text-obsidian-900 mb-4">Masterpiece Archives</h3>
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-              {DESIGN_PRESETS.map((p) => {
-                const firstStone = catalog.find(i => i.name === p.pattern[0]);
-                const secStone = catalog.find(i => i.name === p.pattern[1]);
-                if (!firstStone || !secStone) return null;
-                return (
-                  <button
-                    key={p.name}
-                    onClick={() => applyPreset(p)}
-                    className="group text-left p-3.5 border hairline border-obsidian-200/50 rounded-sm glass-panel hover:glass-panel hover:border-gold-400 transition-all duration-300"
-                  >
-                    <div className="flex gap-1.5 mb-2.5">
-                      <span className="w-3.5 h-3.5 rounded-full shadow-inner" style={{ backgroundColor: firstStone.hex }} />
-                      <span className="w-3.5 h-3.5 rounded-full shadow-inner" style={{ backgroundColor: secStone.hex }} />
-                    </div>
-                    <h4 className="font-serif text-sm font-semibold text-[var(--theme-primary)] leading-tight group-hover:text-gold-600 transition-colors">
-                      {p.name}
-                    </h4>
-                    <span className="font-mono text-[10px] text-obsidian-400 block mt-0.5">{p.sub}</span>
-                  </button>
-                );
-              })}
+            {/* Live spec strip: the numbers that decide whether this bracelet
+                actually fits, kept next to the object rather than buried in a
+                panel further down the page. */}
+            <div className="grid grid-cols-3 divide-x divide-[var(--color-line)] border-t border-[var(--color-line)] bg-white/60">
+              {[
+                { k: 'Beads', v: String(beads.length) },
+                { k: 'Inner fit', v: `${designStats.innerFit.toFixed(1)}mm` },
+                { k: 'Target', v: `${designStats.target}mm` },
+              ].map((s) => (
+                <div key={s.k} className="px-4 py-3 text-center">
+                  <span className="label-micro block">{s.k}</span>
+                  <span className="numeral mt-0.5 block text-[15px] font-semibold text-[var(--color-text-primary)]">
+                    {s.v}
+                  </span>
+                </div>
+              ))}
+            </div>
+
+            <div
+              className={`flex items-center justify-center gap-2 border-t px-4 py-2.5 text-[12px] font-semibold ${
+                fitTone === 'success'
+                  ? 'border-[color-mix(in_srgb,var(--color-success-fg)_20%,transparent)] bg-[var(--color-success-bg)] text-[var(--color-success-fg)]'
+                  : fitTone === 'danger'
+                    ? 'border-[color-mix(in_srgb,var(--color-danger-fg)_20%,transparent)] bg-[var(--color-danger-bg)] text-[var(--color-danger-fg)]'
+                    : 'border-[color-mix(in_srgb,var(--color-warning-fg)_20%,transparent)] bg-[var(--color-warning-bg)] text-[var(--color-warning-fg)]'
+              }`}
+            >
+              <span
+                aria-hidden="true"
+                className="h-1.5 w-1.5 rounded-full bg-current"
+              />
+              {fitLabel}
+              <span className="numeral font-normal opacity-75">
+                ({designStats.discrepancy > 0 ? '+' : ''}
+                {designStats.discrepancy.toFixed(1)}mm)
+              </span>
             </div>
           </div>
         </div>
       </div>
+
+      {/* ------------------------------------------------------------------ */}
+      {/* Analysis                                                            */}
+      {/* ------------------------------------------------------------------ */}
+      <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-2">
+        <SafeSection label="2D blueprint">
+          <Blueprint2D
+            beads={beads}
+            gemstoneNames={gemstoneNames}
+            xrayMode={true}
+            designStats={designStats}
+            isSpinning={false}
+            manualAngle={manualAngle}
+            activeCharm={activeCharm}
+            selectedBeadIndex={selectedBeadIndex}
+            setSelectedBeadIndex={setSelectedBeadIndex}
+            wristMm={wristMm}
+            spinSpeed={spinSpeed}
+            blueprintMetrics={blueprintMetrics}
+          />
+        </SafeSection>
+        <SafeSection label="Expert assessment">
+          <ExpertAssessment expertAnalysis={expertAnalysis} />
+        </SafeSection>
       </div>
-      
+
+      {/* ------------------------------------------------------------------ */}
+      {/* Archives                                                            */}
+      {/* ------------------------------------------------------------------ */}
+      <section className="mt-6">
+        <div className="mb-4 flex items-baseline justify-between gap-4">
+          <div>
+            <h2 className="font-serif text-[24px] font-semibold leading-tight tracking-tight text-[var(--color-text-primary)]">
+              Masterpiece archives
+            </h2>
+            <p className="mt-1 text-[13px] text-[var(--color-text-muted)]">
+              Start from a studio composition, then make it yours.
+            </p>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
+          {DESIGN_PRESETS.map((p) => {
+            const firstStone = catalog.find((i) => i.name === p.pattern[0]);
+            const secStone = catalog.find((i) => i.name === p.pattern[1]);
+            if (!firstStone || !secStone) return null;
+            return (
+              <button
+                key={p.name}
+                onClick={() => applyPreset(p)}
+                className="panel u-interactive u-press group p-4 text-left hover:border-[var(--color-gold-400)] hover:shadow-[var(--shadow-e3)]"
+              >
+                {/* Overlapping swatches read as a physical strand rather than
+                    two unrelated dots. */}
+                <span aria-hidden="true" className="mb-3 flex">
+                  <span
+                    className="h-6 w-6 rounded-full shadow-inner ring-2 ring-white"
+                    style={{ backgroundColor: firstStone.hex }}
+                  />
+                  <span
+                    className="-ml-2 h-6 w-6 rounded-full shadow-inner ring-2 ring-white"
+                    style={{ backgroundColor: secStone.hex }}
+                  />
+                </span>
+                <span className="block font-serif text-[15px] font-semibold leading-tight text-[var(--color-text-primary)]">
+                  {p.name}
+                </span>
+                <span className="mt-1 block text-[11px] leading-snug text-[var(--color-text-muted)]">
+                  {p.sub}
+                </span>
+              </button>
+            );
+          })}
+        </div>
+      </section>
+        </div>
+      </div>
+
       {/* Modals */}
       {isOrderOpen && (
         <SafeSection label="Checkout" compact>

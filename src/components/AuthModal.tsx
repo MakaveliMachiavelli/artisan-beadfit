@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useAuthStore } from '../store/useAuthStore';
-import { LogIn, UserPlus, X } from 'lucide-react';
+import { LogIn, UserPlus } from 'lucide-react';
+import { ModalShell, Button, inputClass } from './ui';
 
 interface AuthModalProps {
   isOpen: boolean;
@@ -26,95 +27,122 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
         await register(email, password, name);
       }
       onClose();
-    } catch (err) {
-      // Error is handled in store
+    } catch {
+      // Error surfaces through the store
     }
   };
 
+  const formId = 'auth-form';
+
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-obsidian-950/40 backdrop-blur-sm animate-in fade-in duration-200">
-      <div className="bg-[#fcfaf8] w-full max-w-md rounded-sm border hairline border-obsidian-200/50 shadow-2xl overflow-hidden flex flex-col">
-        <div className="flex justify-between items-center p-5 border-b hairline border-obsidian-200/50 bg-white">
-          <h2 className="font-serif text-xl font-bold text-[var(--theme-primary)]">
-            {isLogin ? 'Sign In to Studio' : 'Create Artisan Account'}
-          </h2>
-          <button onClick={onClose} className="p-1 hover:bg-obsidian-100 rounded-sm text-obsidian-500 transition-colors">
-            <X className="w-5 h-5" />
-          </button>
-        </div>
-
-        <form onSubmit={handleSubmit} className="p-6 space-y-4">
-          {error && (
-            <div className="p-3 bg-red-50 text-red-700 text-sm font-mono border border-red-200 rounded-sm">
-              {error}
-            </div>
-          )}
-
-          {!isLogin && (
-            <div className="space-y-1">
-              <label className="text-xs font-mono uppercase tracking-widest text-obsidian-600">Full Name</label>
-              <input
-                type="text"
-                required
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                className="w-full glass-panel border hairline border-obsidian-200/50 px-3 py-2 rounded-sm text-sm focus:outline-none focus:border-gold-400 transition-colors"
-                placeholder="Juan Dela Cruz"
-              />
-            </div>
-          )}
-
-          <div className="space-y-1">
-            <label className="text-xs font-mono uppercase tracking-widest text-obsidian-600">Email Address</label>
-            <input
-              type="email"
-              required
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="w-full glass-panel border hairline border-obsidian-200/50 px-3 py-2 rounded-sm text-sm focus:outline-none focus:border-gold-400 transition-colors"
-              placeholder="artisan@example.com"
-            />
-          </div>
-
-          <div className="space-y-1">
-            <label className="text-xs font-mono uppercase tracking-widest text-obsidian-600">Password</label>
-            <input
-              type="password"
-              required
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="w-full glass-panel border hairline border-obsidian-200/50 px-3 py-2 rounded-sm text-sm focus:outline-none focus:border-gold-400 transition-colors"
-              placeholder="••••••••"
-            />
-          </div>
-
-          <div className="pt-4">
-            <button
-              type="submit"
-              disabled={isLoading}
-              className="w-full bg-[var(--theme-primary)] hover:brightness-110 text-gold-100 text-sm font-semibold py-3 rounded-sm transition-all flex items-center justify-center gap-2 disabled:opacity-50"
-            >
-              {isLoading ? (
-                'Processing...'
-              ) : isLogin ? (
-                <><LogIn className="w-4 h-4" /> Sign In</>
-              ) : (
-                <><UserPlus className="w-4 h-4" /> Create Account</>
-              )}
-            </button>
-          </div>
-        </form>
-
-        <div className="p-4 border-t hairline border-obsidian-200/50 bg-obsidian-50/50 text-center">
-          <button
-            type="button"
-            onClick={() => { setIsLogin(!isLogin); setEmail(''); setPassword(''); setName(''); }}
-            className="text-xs font-mono tracking-wide text-obsidian-500 hover:text-[var(--theme-primary)] transition-colors"
+    <ModalShell
+      open={isOpen}
+      onClose={onClose}
+      size="sm"
+      title={isLogin ? 'Sign in' : 'Create account'}
+      subtitle={isLogin ? 'Access your saved designs' : 'Save designs and track orders'}
+      footer={
+        <div className="space-y-3">
+          <Button
+            type="submit"
+            form={formId}
+            variant="primary"
+            size="lg"
+            block
+            disabled={isLoading}
           >
-            {isLogin ? "Don't have an account? Sign up." : "Already have an account? Sign in."}
-          </button>
+            {isLoading ? (
+              'Working…'
+            ) : isLogin ? (
+              <>
+                <LogIn className="h-4 w-4" /> Sign in
+              </>
+            ) : (
+              <>
+                <UserPlus className="h-4 w-4" /> Create account
+              </>
+            )}
+          </Button>
+          <p className="text-center text-[12px] text-[var(--color-text-muted)]">
+            {isLogin ? "Don't have an account?" : 'Already have an account?'}{' '}
+            <button
+              type="button"
+              onClick={() => {
+                setIsLogin(!isLogin);
+                setEmail('');
+                setPassword('');
+                setName('');
+              }}
+              className="u-interactive font-semibold text-[var(--color-text-accent)] underline underline-offset-2 hover:text-[var(--color-gold-800)]"
+            >
+              {isLogin ? 'Sign up' : 'Sign in'}
+            </button>
+          </p>
         </div>
-      </div>
-    </div>
+      }
+    >
+      <form id={formId} onSubmit={handleSubmit} className="space-y-4">
+        {error && (
+          <div
+            role="alert"
+            className="rounded-[var(--radius-sm)] border border-[color-mix(in_srgb,var(--color-danger-fg)_25%,transparent)] bg-[var(--color-danger-bg)] px-3 py-2.5 text-[13px] text-[var(--color-danger-fg)]"
+          >
+            {error}
+          </div>
+        )}
+
+        {!isLogin && (
+          <div className="space-y-1.5">
+            <label htmlFor="auth-name" className="label-micro block">
+              Full name
+            </label>
+            <input
+              id="auth-name"
+              type="text"
+              required
+              autoComplete="name"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              className={inputClass}
+              placeholder="Juan Dela Cruz"
+            />
+          </div>
+        )}
+
+        <div className="space-y-1.5">
+          <label htmlFor="auth-email" className="label-micro block">
+            Email address
+          </label>
+          <input
+            id="auth-email"
+            type="email"
+            required
+            autoComplete="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            className={inputClass}
+            placeholder="artisan@example.com"
+          />
+        </div>
+
+        <div className="space-y-1.5">
+          <label htmlFor="auth-password" className="label-micro block">
+            Password
+          </label>
+          <input
+            id="auth-password"
+            type="password"
+            required
+            /* Correct token lets password managers distinguish the two flows;
+               previously neither field carried an autocomplete hint. */
+            autoComplete={isLogin ? 'current-password' : 'new-password'}
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            className={inputClass}
+            placeholder="••••••••"
+          />
+        </div>
+      </form>
+    </ModalShell>
   );
 };
