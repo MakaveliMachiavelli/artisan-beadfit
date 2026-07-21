@@ -254,3 +254,39 @@ export interface IShipmentRepository {
   updateStatus(shipmentId: string, status: string, trackingNum?: string | null): Promise<DomainShipment>;
   findByOrderId(orderId: string): Promise<DomainShipment[]>;
 }
+
+/** A ready-made piece sold as-is. See the ShopItem model in schema.prisma. */
+export interface DomainShopItem {
+  id: string;
+  slug: string;
+  name: string;
+  tagline: string | null;
+  description: string | null;
+  price: number;
+  status: string;
+  stockQty: number;
+  composition: string | null;
+  sizeMm: number | null;
+  wristMm: number | null;
+  ease: number | null;
+  heroImage: string | null;
+  spinBasePath: string | null;
+  spinFrameCount: number;
+  galleryImages: string | null;
+  createdAt: Date;
+  updatedAt: Date;
+  deletedAt: Date | null;
+}
+
+export interface IShopItemRepository {
+  /** Public listing - excludes DRAFT/ARCHIVED and soft-deleted rows. */
+  listActive(): Promise<DomainShopItem[]>;
+  findBySlug(slug: string): Promise<DomainShopItem | null>;
+  findById(id: string): Promise<DomainShopItem | null>;
+  /**
+   * Decrements stock and flips status to SOLD_OUT at zero. Returns null when
+   * there is not enough stock, so the caller can distinguish "sold out" from
+   * "no such item" without a second read.
+   */
+  decrementStock(id: string, quantity: number): Promise<DomainShopItem | null>;
+}

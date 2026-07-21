@@ -28,6 +28,8 @@ import {
   IManufacturingRepository,
   IPaymentRepository,
   IShipmentRepository,
+  DomainShopItem,
+  IShopItemRepository,
 } from './contracts';
 
 // 1. PrismaUserRepository
@@ -538,5 +540,48 @@ export class PrismaShipmentRepository implements IShipmentRepository {
       orderBy: { createdAt: 'desc' },
     });
     return shipments;
+  }
+}
+
+// 10. PrismaShopItemRepository
+export class PrismaShopItemRepository implements IShopItemRepository {
+  async listActive(): Promise<DomainShopItem[]> {
+    return prisma.shopItem.findMany({
+      where: { deletedAt: null, status: { in: ['ACTIVE', 'SOLD_OUT'] } },
+      orderBy: [{ status: 'asc' }, { createdAt: 'desc' }],
+    });
+  }
+
+  async findBySlug(slug: string): Promise<DomainShopItem | null> {
+    return prisma.shopItem.findFirst({ where: { slug, deletedAt: null } });
+  }
+
+  async findById(id: string): Promise<DomainShopItem | null> {
+    return prisma.shopItem.findFirst({ where: { id, deletedAt: null } });
+  }
+
+  /**
+   * Guarded decrement. The `stockQty: { gte: quantity }` predicate lives in
+   * the WHERE clause rather than in a read-then-write, so two concurrent
+   * confirmations cannot both pass a check and drive stock negative - the
+   * second matches zero rows and throws, which we translate to null.
+   */
+  async decrementStock(id: string, quantity: number): Promise<DomainShopItem | null> {
+    try {
+      const updated = await prisma.shopItem.update({
+        where: { id, stockQty: { gte: quantity } },
+        data: { stockQty: { decrement: quantity } },
+      });
+      if (updated.stockQty <= 0 && updated.status === 'ACTIVE') {
+        return prisma.shopItem.update({
+          where: { id },
+          data: { status: 'SOLD_OUT' },
+        });
+      }
+      return updated;
+    } catch {
+      // No row matched the stock guard - insufficient stock or missing item.
+      return null;
+    }
   }
 }

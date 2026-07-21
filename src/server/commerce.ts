@@ -6,7 +6,8 @@ import {
   PrismaOrderRepository,
   PrismaInventoryRepository,
   PrismaPaymentRepository,
-  PrismaDesignRepository
+  PrismaDesignRepository,
+  PrismaShopItemRepository
 } from '../db/repositories/prisma';
 import { requireAuth, optionalAuth } from './auth';
 import { v4 as uuidv4 } from 'uuid';

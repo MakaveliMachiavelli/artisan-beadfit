@@ -129,6 +129,49 @@ model BraceletDesign {
   @@index([userId])
 }
 
+/// A ready-made piece that physically exists and is sold as-is.
+///
+/// Deliberately separate from Product/Variant: those are bead-level raw
+/// materials (category CHARM/BEAD/SPACER, size in mm), not finished goods.
+/// Stock here is a plain count because each ready-made bracelet is one
+/// discrete physical object - the InventoryLedger's reserve/commit model is
+/// for consumable bead stock and would be the wrong shape.
+model ShopItem {
+  id             String    @id @default(uuid())
+  slug           String    @unique // used in the /shop/:slug URL
+  name           String
+  tagline        String?
+  description    String?
+
+  /// Authoritative price. Unlike custom designs - whose markup/labor inputs
+  /// live only in client state - a ready-made item's price is known server
+  /// side, so checkout must read it from here and ignore any client figure.
+  price          Float
+  status         String    @default("DRAFT") // DRAFT, ACTIVE, SOLD_OUT, ARCHIVED
+  stockQty       Int       @default(0)
+
+  /// JSON array of gemstone names, same shape as DesignPreset.pattern in
+  /// src/data.ts. Drives the secondary 3D view and "customise this" hand-off.
+  composition    String?
+  sizeMm         Int?      // bead diameter the piece was strung at
+  wristMm        Int?      // so the 3D view renders true to size
+  ease           Int?
+
+  heroImage      String?
+  /// Convention-based spin frames: `${spinBasePath}/frame-01.webp` .. frame-NN.
+  /// Stored as a path + count rather than 24 rows per item.
+  spinBasePath   String?
+  spinFrameCount Int       @default(0)
+  galleryImages  String?   // JSON array of paths
+
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+  deletedAt      DateTime?
+
+  @@index([slug])
+  @@index([status])
+}
+
 model Order {
   id          String    @id @default(uuid())
   userId      String?

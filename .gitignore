@@ -12,3 +12,6 @@ coverage/
 *.db
 *.db-journal
 *.db.corrupted.bak
+# Pre-migration snapshots (dev.db.bak-<label>-<timestamp>). The bare *.db rule
+# does not match these because the extension is not last.
+dev.db.bak-*
