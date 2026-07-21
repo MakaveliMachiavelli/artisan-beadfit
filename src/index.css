@@ -1,0 +1,141 @@
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@300;400;500;600;700&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-serif: "Cormorant Garamond", Georgia, serif;
+  --font-sans: "Inter", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", monospace;
+
+  /* Natural Tones - Obsidian/Ink Slate */
+  --color-obsidian-50: #faf9f6;
+  --color-obsidian-100: #e8e6e1;
+  --color-obsidian-200: #d5d2c8;
+  --color-obsidian-300: #b2ae9f;
+  --color-obsidian-400: #8b8777;
+  --color-obsidian-500: #6c685a;
+  --color-obsidian-600: #504d41;
+  --color-obsidian-700: #38362d;
+  --color-obsidian-800: #23221c;
+  --color-obsidian-900: #1a1a1a;
+
+  /* Natural Tones - Brand Gold */
+  --color-gold-50: #faf9f6;
+  --color-gold-100: #f2f0eb;
+  --color-gold-200: #e8e6e1;
+  --color-gold-300: #d8d4c9;
+  --color-gold-400: #c5a059;
+  --color-gold-500: #b08d57;
+  --color-gold-600: #997542;
+  --color-gold-700: #7e5e32;
+  --color-gold-800: #624823;
+  --color-gold-900: #453117;
+
+  /* Gemstone Colors */
+  --color-gem-jade: #1f4e3d;
+  --color-gem-onyx: #171718;
+  --color-gem-lapis: #1a365d;
+  --color-gem-turquoise: #20757c;
+  --color-gem-amethyst: #4c3b6f;
+  --color-gem-rose: #dfa0a0;
+  --color-gem-carnelian: #9c2e17;
+  --color-gem-tiger: #96611c;
+  --color-gem-citrine: #cc961c;
+  --color-gem-pearl: #f3efe6;
+}
+
+@layer base {
+  body {
+    background: transparent;
+    color: #1a1a1a;
+    font-family: var(--font-sans);
+  }
+}
+
+@keyframes spin-slow {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-spin-slow {
+  animation: spin-slow 25s linear infinite;
+  transform-origin: 190px 190px;
+}
+
+.animate-spin-medium {
+  animation: spin-slow 12s linear infinite;
+  transform-origin: 190px 190px;
+}
+
+.animate-spin-fast {
+  animation: spin-slow 6s linear infinite;
+  transform-origin: 190px 190px;
+}
+
+@layer base {
+  :root {
+    --theme-primary: var(--color-obsidian-900);
+    --theme-bg: var(--color-gold-50);
+  }
+}
+
+.btn, .chip, .badge, .panel-bg, button, .transition-all {
+  transition: all 0.7s cubic-bezier(0.25, 1, 0.5, 1) !important;
+}
+
+/* Machined Slider */
+.machined-slider {
+  -webkit-appearance: none;
+  width: 100%;
+  background: transparent;
+}
+.machined-slider:focus {
+  outline: none;
+}
+.machined-slider::-webkit-slider-runnable-track {
+  width: 100%;
+  height: 4px;
+  cursor: pointer;
+  background: linear-gradient(90deg, #d5d2c8, #e8e6e1);
+  border-radius: 2px;
+  border: 0.5px solid rgba(0, 0, 0, 0.05);
+  box-shadow: inset 0 1px 2px rgba(0,0,0,0.05);
+}
+.machined-slider::-webkit-slider-thumb {
+  border: 1px solid rgba(0,0,0,0.1);
+  height: 24px;
+  width: 12px;
+  border-radius: 4px;
+  background: linear-gradient(180deg, #faf9f6, #d5d2c8);
+  box-shadow: -1px 0px 2px rgba(0,0,0,0.1), 1px 0px 2px rgba(255,255,255,0.8);
+  cursor: pointer;
+  -webkit-appearance: none;
+  margin-top: -10px;
+  transition: transform 0.2s cubic-bezier(0.25, 1, 0.5, 1);
+}
+.machined-slider::-webkit-slider-thumb:hover {
+  transform: scale(1.1);
+}
+.machined-slider:focus::-webkit-slider-runnable-track {
+  background: linear-gradient(90deg, #c5a059, #d8d4c9);
+}
+
+/* Hairline borders */
+.hairline {
+  border-width: 0.5px !important;
+}
+
+/* Ambient shadow */
+.shadow-ambient {
+  box-shadow: 0 12px 40px rgba(0,0,0,0.02);
+}
+
+/* Frosted glass */
+.glass-panel {
+  background: rgba(250, 249, 246, 0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}

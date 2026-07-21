@@ -1,0 +1,6 @@
+{
+  "name": "Artisan Beadfit",
+  "description": "A luxury bespoke gemstone bead fitting and design studio with precision sizing, 3D-shaded interactive beads, aesthetic styling rules, and an expert design analyzer.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

@@ -1,0 +1,226 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Get a free hosted Postgres database in seconds: `npx create-db`
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+model User {
+  id            String    @id @default(uuid())
+  email         String    @unique
+  passwordHash  String?
+  name          String?
+  role          String    @default("CUSTOMER") // CUSTOMER, ADMIN
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  deletedAt     DateTime?
+
+  orders        Order[]
+  designs       BraceletDesign[]
+  sessions      Session[]
+  cart          Cart?
+
+  @@index([email])
+}
+
+model Session {
+  id        String   @id @default(uuid())
+  userId    String
+  token     String   @unique
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([token])
+}
+
+model Product {
+  id          String    @id @default(uuid())
+  name        String
+  description String
+  category    String    // CHARM, BEAD, SPACER, etc.
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  deletedAt   DateTime?
+
+  variants    Variant[]
+}
+
+model Material {
+  id          String    @id @default(uuid())
+  name        String    // e.g. "Amethyst", "Silver", "Gold"
+  hardness    Float?
+  density     Float?
+  color       String?
+  properties  String?   // JSON string or simple text
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  variants    Variant[]
+}
+
+model Variant {
+  id          String    @id @default(uuid())
+  productId   String
+  materialId  String?
+  sku         String    @unique
+  size        Float?    // Size in mm
+  quality     String?   // AAA, AA, etc.
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  deletedAt   DateTime?
+
+  product     Product   @relation(fields: [productId], references: [id])
+  material    Material? @relation(fields: [materialId], references: [id])
+  
+  inventory   InventoryLedger[]
+  pricing     PriceHistory[]
+
+  @@index([productId])
+  @@index([materialId])
+  @@index([sku])
+}
+
+model InventoryLedger {
+  id          String    @id @default(uuid())
+  variantId   String
+  type        String    // RESERVE, RELEASE, REPLENISH, DEPLETE
+  quantity    Int
+  notes       String?
+  createdAt   DateTime  @default(now())
+
+  variant     Variant   @relation(fields: [variantId], references: [id])
+
+  @@index([variantId])
+}
+
+model PriceHistory {
+  id          String    @id @default(uuid())
+  variantId   String
+  price       Float
+  effectiveFrom DateTime @default(now())
+  effectiveTo   DateTime?
+
+  variant     Variant   @relation(fields: [variantId], references: [id])
+
+  @@index([variantId])
+}
+
+model BraceletDesign {
+  id          String    @id @default(uuid())
+  userId      String?
+  name        String
+  items       String    // JSON string for SQLite (Prisma supports Json for postgres, but String for SQLite)
+  materialIds String    // JSON array string for indexes
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  deletedAt   DateTime?
+
+  user        User?     @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+}
+
+model Order {
+  id          String    @id @default(uuid())
+  userId      String?
+  status      String    // PENDING, PAID, MANUFACTURING, SHIPPED, DELIVERED, CANCELLED
+  totalAmount Float
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  user        User?     @relation(fields: [userId], references: [id])
+  items       OrderItem[]
+  payment     Payment?
+  jobs        ManufacturingJob[]
+  shipments   Shipment[]
+
+  @@index([userId])
+}
+
+model OrderItem {
+  id          String    @id @default(uuid())
+  orderId     String
+  type        String    // CUSTOM_BRACELET, INDIVIDUAL_ITEM
+  quantity    Int
+  price       Float     // Historical price snapshot
+  configuration String? // JSON string describing the exact bead configuration
+  metadata    String?   // JSON string for other metadata
+
+  order       Order     @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  @@index([orderId])
+}
+
+model Payment {
+  id          String    @id @default(uuid())
+  orderId     String    @unique
+  provider    String    // STRIPE, PAYPAL
+  status      String    // AUTHORIZED, CAPTURED, FAILED, REFUNDED
+  amount      Float
+  referenceId String?   // Gateway reference
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  order       Order     @relation(fields: [orderId], references: [id], onDelete: Cascade)
+}
+
+model ManufacturingJob {
+  id          String    @id @default(uuid())
+  orderId     String
+  status      String    // QUEUED, STRINGING, KNOTTING, INSPECTION, PACKAGED
+  workerId    String?   // Could be user id of an admin/worker
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  order       Order     @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  @@index([orderId])
+}
+
+model Shipment {
+  id          String    @id @default(uuid())
+  orderId     String
+  status      String    // PREPARING, DISPATCHED, DELIVERED
+  trackingNum String?
+  carrier     String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  order       Order     @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  @@index([orderId])
+}
+
+model Cart {
+  id          String     @id @default(uuid())
+  userId      String?    @unique
+  sessionId   String?    @unique // For guest carts
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+  items       CartItem[]
+
+  user        User?      @relation(fields: [userId], references: [id])
+}
+
+model CartItem {
+  id          String   @id @default(uuid())
+  cartId      String
+  type        String   // CUSTOM_BRACELET, INDIVIDUAL_ITEM
+  quantity    Int      @default(1)
+  configuration String? // JSON string
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  cart        Cart     @relation(fields: [cartId], references: [id], onDelete: Cascade)
+
+  @@index([cartId])
+}
