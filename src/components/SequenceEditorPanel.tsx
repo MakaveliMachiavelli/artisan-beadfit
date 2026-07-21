@@ -82,11 +82,11 @@ export const SequenceEditorPanel: React.FC<SequenceEditorPanelProps> = ({
                       style={{ backgroundColor: sp.hex }}
                     />
                     <span className="min-w-0">
-                      <span className="block truncate text-[12.5px] font-semibold leading-tight">
+                      <span className="block truncate text-label font-semibold leading-tight">
                         {sp.name}
                       </span>
                       <span
-                        className={`numeral block text-[11px] leading-tight ${
+                        className={`numeral block text-micro leading-tight ${
                           activeSpacerId === sp.id
                             ? 'text-[var(--color-text-onDark)]/70'
                             : 'text-[var(--color-text-muted)]'
@@ -96,7 +96,7 @@ export const SequenceEditorPanel: React.FC<SequenceEditorPanelProps> = ({
                       </span>
                     </span>
                   </span>
-                  <span className="numeral shrink-0 text-[12px] font-semibold">₱{Math.round(sp.cost * markup)}</span>
+                  <span className="numeral shrink-0 text-small font-semibold">₱{Math.round(sp.cost * markup)}</span>
                 </label>
               ))}
             </div>
@@ -118,7 +118,7 @@ export const SequenceEditorPanel: React.FC<SequenceEditorPanelProps> = ({
           {/* With no pendants in the catalog the only tile was "None", which
               presented a choice that wasn't one. State it plainly instead. */}
           {availableCharms.length === 0 ? (
-            <p className="rounded-[var(--radius-md)] border border-dashed border-[var(--color-line-strong)] bg-[var(--color-surface-sunken)]/60 px-4 py-5 text-center text-[12.5px] leading-relaxed text-[var(--color-text-muted)]">
+            <p className="rounded-[var(--radius-md)] border border-dashed border-[var(--color-line-strong)] bg-[var(--color-surface-sunken)]/60 px-4 py-5 text-center text-label leading-relaxed text-[var(--color-text-muted)]">
               No pendants are stocked right now.
               <br />
               This strand will be finished without a centre piece.
@@ -177,9 +177,9 @@ export const SequenceEditorPanel: React.FC<SequenceEditorPanelProps> = ({
           <div className="flex items-center justify-between gap-4 rounded-[var(--radius-md)] border border-[var(--color-line)] bg-white/60 px-4 py-3">
             <div className="min-w-0">
               <span className="label-micro block">Strand length</span>
-              <span className="numeral text-[18px] font-semibold text-[var(--theme-primary)]">
+              <span className="numeral text-heading font-semibold text-[var(--theme-primary)]">
                 {designLength}
-                <span className="ml-0.5 text-[12px] font-medium text-[var(--color-text-muted)]">mm</span>
+                <span className="ml-0.5 text-small font-medium text-[var(--color-text-muted)]">mm</span>
               </span>
             </div>
 
@@ -193,7 +193,7 @@ export const SequenceEditorPanel: React.FC<SequenceEditorPanelProps> = ({
               </IconButton>
               <span
                 aria-live="polite"
-                className="numeral min-w-[3.25rem] rounded-[var(--radius-sm)] border border-[var(--color-line)] bg-white px-3 py-2 text-center text-[15px] font-semibold text-[var(--color-text-primary)]"
+                className="numeral min-w-[3.25rem] rounded-[var(--radius-sm)] border border-[var(--color-line)] bg-white px-3 py-2 text-center text-subheading font-semibold text-[var(--color-text-primary)]"
               >
                 {beadsCount}
               </span>
@@ -203,7 +203,7 @@ export const SequenceEditorPanel: React.FC<SequenceEditorPanelProps> = ({
             </div>
           </div>
 
-          <p className="text-[11px] leading-relaxed text-[var(--color-text-muted)]">
+          <p className="text-micro leading-relaxed text-[var(--color-text-muted)]">
             Tap any bead in the preview to swap or remove it individually.
             {beadsCount <= MIN_BEADS && ` Minimum ${MIN_BEADS} beads keeps the strand structural.`}
           </p>

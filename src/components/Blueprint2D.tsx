@@ -49,7 +49,7 @@ export const Blueprint2D: React.FC<Blueprint2DProps> = ({
     <Panel className="h-full">
       <div className="flex h-full flex-col gap-4">
         <div>
-          <h3 className="font-serif text-[20px] font-semibold leading-tight tracking-tight text-[var(--color-text-primary)]">
+          <h3 className="font-serif text-heading font-semibold leading-tight tracking-tight text-[var(--color-text-primary)]">
             Technical blueprint
           </h3>
           <p className="label-micro mt-1">Scale schematic · tap a bead to select</p>
@@ -137,7 +137,7 @@ export const Blueprint2D: React.FC<Blueprint2DProps> = ({
                         strokeWidth="1.5" 
                         strokeDasharray="4 2" 
                       />
-                      <text x="190" y={190 + (blueprintMetrics.rWrist * 4) + 12} textAnchor="middle" fill="#06b6d4" fontSize="9" fontFamily="monospace">
+                      <text x="190" y={190 + (blueprintMetrics.rWrist * 4) + 12} textAnchor="middle" fill="#06b6d4" fontSize="11" fontFamily="monospace">
                         WRIST BOUNDARY: {(wristMm/10).toFixed(1)}cm
                       </text>
 
@@ -151,7 +151,7 @@ export const Blueprint2D: React.FC<Blueprint2DProps> = ({
                         strokeWidth="1" 
                         strokeDasharray="2 4" 
                       />
-                      <text x="190" y={190 - (blueprintMetrics.rTarget * 4) - 6} textAnchor="middle" fill="#f59e0b" fontSize="9" fontFamily="monospace">
+                      <text x="190" y={190 - (blueprintMetrics.rTarget * 4) - 6} textAnchor="middle" fill="#f59e0b" fontSize="11" fontFamily="monospace">
                         TARGET COMFORT LINE: {designStats.target.toFixed(1)}mm
                       </text>
 
@@ -427,12 +427,12 @@ export const Blueprint2D: React.FC<Blueprint2DProps> = ({
                     {/* 9px was below the readable floor for a value this
                         important; raised and given a lighter tracking so the
                         figure reads as a headline rather than a caption. */}
-                    <text x="190" y="178" textAnchor="middle" className={`font-mono text-[11px] uppercase tracking-[0.16em] ${
+                    <text x="190" y="178" textAnchor="middle" className={`font-mono text-micro uppercase tracking-[0.16em] ${
                       xrayMode ? 'fill-slate-300' : 'fill-obsidian-500'
                     }`}>
                       Inner fit
                     </text>
-                    <text x="190" y="204" textAnchor="middle" className={`font-sans text-[26px] font-semibold tracking-tight ${
+                    <text x="190" y="204" textAnchor="middle" className={`font-sans text-title font-semibold tracking-tight ${
                       xrayMode ? 'fill-white' : 'fill-obsidian-900'
                     }`}>
                       {designStats.innerFit.toFixed(1)}mm
@@ -440,7 +440,7 @@ export const Blueprint2D: React.FC<Blueprint2DProps> = ({
                     {/* Light-on-dark variants. The --color-success-fg /
                         --color-warning-fg tokens are tuned for the paper
                         surface and drop to ~2.9:1 against this dark panel. */}
-                    <text x="190" y="222" textAnchor="middle" className={`font-mono text-[11px] font-semibold tracking-[0.08em] ${
+                    <text x="190" y="222" textAnchor="middle" className={`font-mono text-micro font-semibold tracking-[0.08em] ${
                       designStats.status === 'perfect' ? 'fill-[#6ee7b7]' : 'fill-[#fcd34d]'
                     }`}>
                       {designStats.discrepancy >= 0 ? '+' : ''}{designStats.discrepancy.toFixed(1)}mm gap

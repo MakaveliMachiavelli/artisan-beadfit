@@ -695,10 +695,10 @@ export const Bracelet3D: React.FC<Bracelet3DProps> = ({
     return (
       <div className="flex h-full w-full items-center justify-center bg-[var(--color-surface-sunken)] p-8 text-center">
         <div>
-          <p className="font-serif text-[17px] font-semibold text-[var(--color-text-primary)]">
+          <p className="font-serif text-subheading font-semibold text-[var(--color-text-primary)]">
             3D preview unavailable
           </p>
-          <p className="numeral mt-1.5 text-[12px] text-[var(--color-text-muted)]">{sceneError}</p>
+          <p className="numeral mt-1.5 text-small text-[var(--color-text-muted)]">{sceneError}</p>
         </div>
       </div>
     );
@@ -719,15 +719,15 @@ export const Bracelet3D: React.FC<Bracelet3DProps> = ({
       >
         {hoveredBead && (
           <div className="max-w-[220px] rounded-[var(--radius-md)] border border-[var(--color-line)] bg-white/95 px-3 py-2.5 shadow-[var(--shadow-e3)] backdrop-blur-md">
-            <p className="font-serif text-[15px] font-semibold leading-tight text-[var(--color-text-primary)]">
+            <p className="font-serif text-subheading font-semibold leading-tight text-[var(--color-text-primary)]">
               {hoveredBead.name}
             </p>
-            <p className="numeral mt-0.5 text-[11px] text-[var(--color-text-muted)]">
+            <p className="numeral mt-0.5 text-micro text-[var(--color-text-muted)]">
               {hoveredBead.size}mm
               {hoverInfo ? ` · Mohs ${hoverInfo.mohsHardness}` : ''}
             </p>
             {hoverInfo && (
-              <p className="mt-1.5 text-[12px] leading-snug text-[var(--color-text-secondary)]">
+              <p className="mt-1.5 text-small leading-snug text-[var(--color-text-secondary)]">
                 {hoverInfo.meaning}
               </p>
             )}
@@ -738,14 +738,14 @@ export const Bracelet3D: React.FC<Bracelet3DProps> = ({
       {/* Measured frame rate — reported, not estimated. */}
       <div className="absolute left-4 top-4 z-10 flex items-center gap-2">
         {fps !== null && (
-          <span className="numeral pointer-events-none rounded-full border border-[var(--color-line)] bg-white/80 px-2.5 py-1 text-[11px] font-medium text-[var(--color-text-muted)] backdrop-blur-sm">
+          <span className="numeral pointer-events-none rounded-full border border-[var(--color-line)] bg-white/80 px-2.5 py-1 text-micro font-medium text-[var(--color-text-muted)] backdrop-blur-sm">
             {fps} FPS
           </span>
         )}
         {quality === 'low' && (
           <button
             onClick={() => setQuality('high')}
-            className="u-interactive rounded-full border border-[color-mix(in_srgb,var(--color-warning-fg)_28%,transparent)] bg-[var(--color-warning-bg)] px-2.5 py-1 text-[11px] font-semibold text-[var(--color-warning-fg)]"
+            className="u-interactive rounded-full border border-[color-mix(in_srgb,var(--color-warning-fg)_28%,transparent)] bg-[var(--color-warning-bg)] px-2.5 py-1 text-micro font-semibold text-[var(--color-warning-fg)]"
             title="Frame rate stayed below 30 FPS, so gemstone transmission was disabled. Click to restore full quality."
           >
             Performance mode

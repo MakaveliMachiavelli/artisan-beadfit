@@ -191,7 +191,7 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
   const footer = (
     <div className="space-y-3">
       {!user && (
-        <p className="text-center text-[12px] text-[var(--color-text-muted)]">
+        <p className="text-center text-small text-[var(--color-text-muted)]">
           Sign in to place this order — your design is kept while you do.
         </p>
       )}
@@ -353,9 +353,9 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
                         <div className="flex-1">
                           <div className="flex justify-between items-baseline">
                             <span className="text-xs font-semibold text-obsidian-950">{addon.name}</span>
-                            <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-gold-600 font-bold">+₱{addon.price}</span>
+                            <span className="font-mono text-micro uppercase tracking-[0.18em] text-gold-600 font-bold">+₱{addon.price}</span>
                           </div>
-                          <span className="block text-[10px] text-obsidian-400 mt-0.5 leading-relaxed">{addon.description}</span>
+                          <span className="block text-micro text-obsidian-400 mt-0.5 leading-relaxed">{addon.description}</span>
                         </div>
                       </label>
                     );
@@ -385,12 +385,12 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
                   </button>
                 </div>
                 {voucherError && (
-                  <p role="alert" className="text-[12px] font-medium text-[var(--color-danger-fg)]">
+                  <p role="alert" className="text-small font-medium text-[var(--color-danger-fg)]">
                     {voucherError}
                   </p>
                 )}
                 {appliedVoucher && (
-                  <p role="status" className="text-[12px] font-medium text-[var(--color-success-fg)]">
+                  <p role="status" className="text-small font-medium text-[var(--color-success-fg)]">
                     {appliedVoucher.code} applied ·{' '}
                     {appliedVoucher.type === 'percent'
                       ? `${appliedVoucher.value}% off`
@@ -412,7 +412,7 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
               </div>
 
               {/* Real-time Order calculations readout */}
-              <div className="glass-panel border border-[var(--color-line)] p-5 rounded-sm space-y-3 font-mono text-[10px] uppercase tracking-[0.18em]">
+              <div className="glass-panel border border-[var(--color-line)] p-5 rounded-sm space-y-3 font-mono text-micro uppercase tracking-[0.18em]">
                 <div className="flex justify-between">
                   <span>Bespoke Bracelet ({beads.length} Beads) × {orderQty}</span>
                   <span className="font-serif text-lg font-bold text-obsidian-900">₱{orderCalculations.subtotal}</span>
@@ -465,7 +465,7 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
               </div>
 
               {/* Output block */}
-              <pre className="scroll-area max-h-60 overflow-x-auto rounded-[var(--radius-md)] bg-[var(--color-obsidian-950)] p-4 text-[11px] leading-relaxed text-[var(--color-gold-100)] shadow-inner">
+              <pre className="scroll-area max-h-60 overflow-x-auto rounded-[var(--radius-md)] bg-[var(--color-obsidian-950)] p-4 text-micro leading-relaxed text-[var(--color-gold-100)] shadow-inner">
                 {orderView === 'customer' ? customerOrderSheetText : benchSheetText}
               </pre>
 

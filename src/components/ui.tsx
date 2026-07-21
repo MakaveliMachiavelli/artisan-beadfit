@@ -47,18 +47,18 @@ export const SectionHeading: React.FC<{
       {step !== undefined && (
         <span
           aria-hidden="true"
-          className="numeral mt-0.5 grid h-6 w-6 shrink-0 place-items-center rounded-full border border-[var(--color-line-strong)] bg-white/70 text-[11px] font-semibold text-[var(--color-text-accent)]"
+          className="numeral mt-0.5 grid h-6 w-6 shrink-0 place-items-center rounded-full border border-[var(--color-line-strong)] bg-white/70 text-micro font-semibold text-[var(--color-text-accent)]"
         >
           {step}
         </span>
       )}
       <div className="min-w-0">
-        <h3 className="flex items-center gap-2 font-sans text-[13px] font-semibold tracking-tight text-[var(--color-text-primary)]">
+        <h3 className="flex items-center gap-2 font-sans text-label font-semibold tracking-tight text-[var(--color-text-primary)]">
           {icon && <span className="text-[var(--color-text-accent)]">{icon}</span>}
           {title}
         </h3>
         {hint && (
-          <p className="mt-1 text-[12px] leading-relaxed text-[var(--color-text-muted)]">{hint}</p>
+          <p className="mt-1 text-small leading-relaxed text-[var(--color-text-muted)]">{hint}</p>
         )}
       </div>
     </div>
@@ -93,9 +93,9 @@ const BTN_VARIANT: Record<ButtonVariant, string> = {
 /* Minimum 40px tall so every control clears the 44px-ish touch guidance once
    spacing is counted; the old 24-28px chips were well under it. */
 const BTN_SIZE: Record<ButtonSize, string> = {
-  sm: 'h-9 px-3 text-[12px]',
-  md: 'h-10 px-4 text-[13px]',
-  lg: 'h-12 px-6 text-[14px]',
+  sm: 'h-9 px-3 text-small',
+  md: 'h-10 px-4 text-label',
+  lg: 'h-12 px-6 text-body',
 };
 
 export const Button = React.forwardRef<
@@ -173,10 +173,10 @@ export const OptionCard: React.FC<{
         style={{ backgroundColor: swatch }}
       />
     )}
-    <span className="text-[13px] font-semibold leading-tight">{title}</span>
+    <span className="text-label font-semibold leading-tight">{title}</span>
     {subtitle && (
       <span
-        className={`numeral mt-0.5 text-[11px] leading-tight ${
+        className={`numeral mt-0.5 text-micro leading-tight ${
           selected ? 'text-[var(--color-text-onDark)]/70' : 'text-[var(--color-text-muted)]'
         }`}
       >
@@ -206,10 +206,10 @@ export const Field: React.FC<{
       </label>
       {children(id)}
       {hint && !error && (
-        <p className="text-[11px] leading-relaxed text-[var(--color-text-muted)]">{hint}</p>
+        <p className="text-micro leading-relaxed text-[var(--color-text-muted)]">{hint}</p>
       )}
       {error && (
-        <p role="alert" className="text-[11px] font-medium text-[var(--color-danger-fg)]">
+        <p role="alert" className="text-micro font-medium text-[var(--color-danger-fg)]">
           {error}
         </p>
       )}
@@ -219,7 +219,7 @@ export const Field: React.FC<{
 
 export const inputClass =
   'u-interactive w-full rounded-[var(--radius-sm)] border border-[var(--color-line-strong)] bg-white/80 ' +
-  'px-3 py-2.5 text-[14px] text-[var(--color-text-primary)] placeholder:text-[var(--color-obsidian-400)] ' +
+  'px-3 py-2.5 text-body text-[var(--color-text-primary)] placeholder:text-[var(--color-obsidian-400)] ' +
   'hover:border-[var(--color-gold-400)] focus:border-[var(--color-gold-600)] focus:bg-white';
 
 /* -------------------------------------------------------------------------- */
@@ -251,7 +251,7 @@ export function Segmented<T extends string>({
             role="radio"
             aria-checked={active}
             onClick={() => onChange(o.value)}
-            className={`u-interactive numeral min-h-[34px] rounded-[var(--radius-xs)] px-3.5 text-[12px] font-semibold ${
+            className={`u-interactive numeral min-h-[34px] rounded-[var(--radius-xs)] px-3.5 text-small font-semibold ${
               active
                 ? 'bg-white text-[var(--color-text-primary)] shadow-[var(--shadow-e1)]'
                 : 'text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)]'
@@ -282,7 +282,7 @@ export const Badge: React.FC<{
   } as const;
   return (
     <span
-      className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[11px] font-semibold ${tones[tone]}`}
+      className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-micro font-semibold ${tones[tone]}`}
     >
       {children}
     </span>
@@ -299,8 +299,8 @@ export const Meter: React.FC<{ label: string; value: number; color: string }> = 
 }) => (
   <div className="space-y-1.5">
     <div className="flex items-baseline justify-between gap-2">
-      <span className="text-[12px] font-medium text-[var(--color-text-secondary)]">{label}</span>
-      <span className="numeral text-[12px] font-semibold text-[var(--color-text-muted)]">{value}%</span>
+      <span className="text-small font-medium text-[var(--color-text-secondary)]">{label}</span>
+      <span className="numeral text-small font-semibold text-[var(--color-text-muted)]">{value}%</span>
     </div>
     <div
       role="meter"
@@ -421,12 +421,12 @@ export const ModalShell: React.FC<{
           <div className="min-w-0">
             <h2
               id={titleId}
-              className="font-serif text-[22px] font-semibold leading-tight tracking-tight text-[var(--color-text-primary)]"
+              className="font-serif text-title font-semibold leading-tight tracking-tight text-[var(--color-text-primary)]"
             >
               {title}
             </h2>
             {subtitle && (
-              <p className="mt-0.5 text-[12px] text-[var(--color-text-muted)]">{subtitle}</p>
+              <p className="mt-0.5 text-small text-[var(--color-text-muted)]">{subtitle}</p>
             )}
           </div>
           <IconButton label="Close" variant="ghost" onClick={onClose}>

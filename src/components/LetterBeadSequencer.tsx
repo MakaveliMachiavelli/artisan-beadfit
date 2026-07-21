@@ -43,7 +43,7 @@ export const LetterBeadSequencer: React.FC<LetterBeadSequencerProps> = ({
             {/* Live counter — previously the 10-char cap silently swallowed
                 keystrokes with no indication of why. */}
             <span
-              className={`numeral text-[11px] ${
+              className={`numeral text-micro ${
                 remaining === 0 ? 'text-[var(--color-text-accent)]' : 'text-[var(--color-text-muted)]'
               }`}
             >
@@ -59,9 +59,9 @@ export const LetterBeadSequencer: React.FC<LetterBeadSequencerProps> = ({
             value={customWord}
             onChange={(e) => setCustomWord(e.target.value.replace(/[^a-zA-Z]/g, '').toUpperCase())}
             aria-describedby="engrave-hint"
-            className="u-interactive mt-2 w-full rounded-[var(--radius-md)] border border-[var(--color-line-strong)] bg-white/80 px-4 py-3 text-center font-mono text-[20px] font-semibold uppercase tracking-[0.35em] text-[var(--color-text-primary)] placeholder:tracking-[0.25em] placeholder:text-[var(--color-obsidian-300)] hover:border-[var(--color-gold-400)] focus:border-[var(--color-gold-600)] focus:bg-white"
+            className="u-interactive mt-2 w-full rounded-[var(--radius-md)] border border-[var(--color-line-strong)] bg-white/80 px-4 py-3 text-center font-mono text-heading font-semibold uppercase tracking-[0.35em] text-[var(--color-text-primary)] placeholder:tracking-[0.25em] placeholder:text-[var(--color-obsidian-300)] hover:border-[var(--color-gold-400)] focus:border-[var(--color-gold-600)] focus:bg-white"
           />
-          <p id="engrave-hint" className="mt-1.5 text-[11px] text-[var(--color-text-muted)]">
+          <p id="engrave-hint" className="mt-1.5 text-micro text-[var(--color-text-muted)]">
             Letters A–Z only, up to {MAX_LETTERS}.
           </p>
         </div>

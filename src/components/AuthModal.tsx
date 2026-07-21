@@ -63,7 +63,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
               </>
             )}
           </Button>
-          <p className="text-center text-[12px] text-[var(--color-text-muted)]">
+          <p className="text-center text-small text-[var(--color-text-muted)]">
             {isLogin ? "Don't have an account?" : 'Already have an account?'}{' '}
             <button
               type="button"
@@ -85,7 +85,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
         {error && (
           <div
             role="alert"
-            className="rounded-[var(--radius-sm)] border border-[color-mix(in_srgb,var(--color-danger-fg)_25%,transparent)] bg-[var(--color-danger-bg)] px-3 py-2.5 text-[13px] text-[var(--color-danger-fg)]"
+            className="rounded-[var(--radius-sm)] border border-[color-mix(in_srgb,var(--color-danger-fg)_25%,transparent)] bg-[var(--color-danger-bg)] px-3 py-2.5 text-label text-[var(--color-danger-fg)]"
           >
             {error}
           </div>

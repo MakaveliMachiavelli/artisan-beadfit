@@ -84,7 +84,7 @@ export const GemstoneSelectorPanel: React.FC<GemstoneSelectorPanelProps> = ({
                   >
                     <span className="absolute left-[3px] top-[2px] h-1 w-1 rounded-full bg-white/70" />
                   </span>
-                  <span className="text-[12.5px] font-medium leading-none">{name}</span>
+                  <span className="text-label font-medium leading-none">{name}</span>
                 </label>
               );
             })}

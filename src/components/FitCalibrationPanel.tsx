@@ -84,12 +84,12 @@ export const FitCalibrationPanel: React.FC<FitCalibrationPanelProps> = ({
                   step={unit === 'in' ? 0.25 : 0.1}
                   value={formattedWristVal()}
                   onChange={(e) => handleWristInputChange(e.target.value)}
-                  className="numeral w-[4.5ch] bg-transparent text-[34px] font-semibold leading-none tracking-tight text-[var(--theme-primary)] focus:outline-none"
+                  className="numeral w-[4.5ch] bg-transparent text-display font-semibold leading-none tracking-tight text-[var(--theme-primary)] focus:outline-none"
                 />
                 <span className="label-micro-accent label-micro">{unit}</span>
               </div>
             </div>
-            <span className="numeral shrink-0 text-[12px] text-[var(--color-text-muted)]">
+            <span className="numeral shrink-0 text-small text-[var(--color-text-muted)]">
               {WRIST_MIN_MM / 10}–{WRIST_MAX_MM / 10} cm
             </span>
           </div>

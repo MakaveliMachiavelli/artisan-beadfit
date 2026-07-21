@@ -73,10 +73,10 @@ export const AdminPanelModal: React.FC<AdminPanelModalProps> = ({
             <Lock className="h-5 w-5" />
           </div>
           <div>
-            <h4 className="font-serif text-[20px] font-semibold text-[var(--color-text-primary)]">
+            <h4 className="font-serif text-heading font-semibold text-[var(--color-text-primary)]">
               Authentication required
             </h4>
-            <p className="mt-1 text-[13px] leading-relaxed text-[var(--color-text-muted)]">
+            <p className="mt-1 text-label leading-relaxed text-[var(--color-text-muted)]">
               Enter the studio passcode to configure markups, labour and shipping.
             </p>
           </div>
@@ -101,7 +101,7 @@ export const AdminPanelModal: React.FC<AdminPanelModalProps> = ({
               className={`${inputClass} text-center`}
             />
             {authError && (
-              <p id="admin-pass-err" role="alert" className="text-[12px] font-medium text-[var(--color-danger-fg)]">
+              <p id="admin-pass-err" role="alert" className="text-small font-medium text-[var(--color-danger-fg)]">
                 {authError}
               </p>
             )}
@@ -122,7 +122,7 @@ export const AdminPanelModal: React.FC<AdminPanelModalProps> = ({
                 role="tab"
                 aria-selected={adminTab === tab}
                 onClick={() => setAdminTab(tab)}
-                className={`u-interactive -mb-px border-b-2 px-4 py-2.5 text-[13px] font-semibold ${
+                className={`u-interactive -mb-px border-b-2 px-4 py-2.5 text-label font-semibold ${
                   adminTab === tab
                     ? 'border-[var(--color-gold-600)] text-[var(--color-text-primary)]'
                     : 'border-transparent text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)]'
@@ -177,12 +177,12 @@ export const AdminPanelModal: React.FC<AdminPanelModalProps> = ({
 
           {adminTab === 'Shipping' && (
             <div className="space-y-3">
-              <p className="text-[13px] text-[var(--color-text-muted)]">Courier cost by destination.</p>
+              <p className="text-label text-[var(--color-text-muted)]">Courier cost by destination.</p>
               <ul className="divide-y divide-[var(--color-line)] overflow-hidden rounded-[var(--radius-md)] border border-[var(--color-line)] bg-white/60">
                 {Object.entries(REGIONS).map(([region, price]) => (
                   <li key={region} className="flex items-center justify-between px-3.5 py-2.5">
-                    <span className="text-[13px] font-medium text-[var(--color-text-secondary)]">{region}</span>
-                    <span className="numeral text-[13px] font-semibold text-[var(--color-text-primary)]">₱{price}</span>
+                    <span className="text-label font-medium text-[var(--color-text-secondary)]">{region}</span>
+                    <span className="numeral text-label font-semibold text-[var(--color-text-primary)]">₱{price}</span>
                   </li>
                 ))}
               </ul>
@@ -192,7 +192,7 @@ export const AdminPanelModal: React.FC<AdminPanelModalProps> = ({
           {adminTab === 'Catalog' && (
             <div className="space-y-3">
               <div className="flex items-center justify-between gap-3">
-                <span className="text-[13px] text-[var(--color-text-muted)]">Registered materials</span>
+                <span className="text-label text-[var(--color-text-muted)]">Registered materials</span>
                 <Badge tone="accent">{catalog.length} items</Badge>
               </div>
               <ul className="scroll-area max-h-[22rem] divide-y divide-[var(--color-line)] overflow-y-auto rounded-[var(--radius-md)] border border-[var(--color-line)] bg-white/60">
@@ -205,20 +205,20 @@ export const AdminPanelModal: React.FC<AdminPanelModalProps> = ({
                         style={{ backgroundColor: item.hex }}
                       />
                       <span className="min-w-0">
-                        <span className="block truncate text-[13px] font-semibold text-[var(--color-text-primary)]">
+                        <span className="block truncate text-label font-semibold text-[var(--color-text-primary)]">
                           {item.name}
                         </span>
-                        <span className="numeral block text-[11px] text-[var(--color-text-muted)]">
+                        <span className="numeral block text-micro text-[var(--color-text-muted)]">
                           {item.size}mm · {item.type}
                           {item.quality ? ` · ${item.quality}` : ''}
                         </span>
                       </span>
                     </span>
                     <span className="shrink-0 text-right">
-                      <span className="numeral block text-[13px] font-semibold text-[var(--color-text-primary)]">
+                      <span className="numeral block text-label font-semibold text-[var(--color-text-primary)]">
                         ₱{Math.round(item.cost * markup)}
                       </span>
-                      <span className="numeral block text-[11px] text-[var(--color-text-muted)]">
+                      <span className="numeral block text-micro text-[var(--color-text-muted)]">
                         cost ₱{item.cost}
                       </span>
                     </span>

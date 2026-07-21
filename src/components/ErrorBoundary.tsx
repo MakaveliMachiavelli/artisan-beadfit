@@ -49,19 +49,19 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
           <AlertTriangle className="h-4 w-4" />
         </div>
         <div>
-          <h4 className="font-serif text-[16px] font-semibold text-[var(--color-text-primary)]">
+          <h4 className="font-serif text-subheading font-semibold text-[var(--color-text-primary)]">
             {label} could not be displayed
           </h4>
-          <p className="numeral mt-1 max-w-xs break-words text-[11px] text-[var(--color-text-muted)]">
+          <p className="numeral mt-1 max-w-xs break-words text-micro text-[var(--color-text-muted)]">
             {error.message || 'Unknown error'}
           </p>
-          <p className="mt-2 text-[12px] text-[var(--color-text-secondary)]">
+          <p className="mt-2 text-small text-[var(--color-text-secondary)]">
             The rest of the studio is still usable.
           </p>
         </div>
         <button
           onClick={this.handleRetry}
-          className="u-interactive u-press inline-flex items-center gap-1.5 rounded-[var(--radius-sm)] border border-[var(--color-line-strong)] bg-white/70 px-3.5 py-2 text-[12px] font-semibold text-[var(--color-text-secondary)] hover:border-[var(--color-gold-400)] hover:text-[var(--color-text-primary)]"
+          className="u-interactive u-press inline-flex items-center gap-1.5 rounded-[var(--radius-sm)] border border-[var(--color-line-strong)] bg-white/70 px-3.5 py-2 text-small font-semibold text-[var(--color-text-secondary)] hover:border-[var(--color-gold-400)] hover:text-[var(--color-text-primary)]"
         >
           <RefreshCw className="h-3.5 w-3.5" />
           Retry

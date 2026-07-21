@@ -656,7 +656,7 @@ export default function StudioPage() {
         className="pointer-events-none fixed bottom-6 left-1/2 z-[120] -translate-x-1/2"
       >
         {toastMsg && (
-          <div className="ab-rise flex items-center gap-2 rounded-full border border-white/10 bg-[var(--color-obsidian-950)] px-4 py-2.5 text-[13px] font-medium text-[var(--color-text-onDark)] shadow-[var(--shadow-e4)]">
+          <div className="ab-rise flex items-center gap-2 rounded-full border border-white/10 bg-[var(--color-obsidian-950)] px-4 py-2.5 text-label font-medium text-[var(--color-text-onDark)] shadow-[var(--shadow-e4)]">
             <Check className="h-4 w-4 text-[var(--color-gold-400)]" />
             {toastMsg}
           </div>
@@ -678,7 +678,7 @@ export default function StudioPage() {
         <header className="sticky top-0 z-40 border-b border-[var(--color-line)] bg-[color-mix(in_srgb,var(--color-obsidian-50)_82%,transparent)] backdrop-blur-xl">
           <div className="mx-auto flex max-w-[1600px] items-center gap-4 px-4 py-3 sm:px-6 lg:px-8">
             <div className="min-w-0 flex-1">
-              <h1 className="truncate font-serif text-[21px] font-semibold leading-none tracking-tight text-[var(--theme-primary)]">
+              <h1 className="truncate font-serif text-heading font-semibold leading-none tracking-tight text-[var(--theme-primary)]">
                 Artisan Beadfit
               </h1>
               <p className="label-micro mt-1 hidden sm:block">Bespoke gemstone studio</p>
@@ -688,7 +688,7 @@ export default function StudioPage() {
                 checkout modal makes people guess; this keeps it in view. */}
             <div className="hidden items-baseline gap-2 rounded-full border border-[var(--color-line)] bg-white/60 px-4 py-2 md:flex">
               <span className="label-micro">Est.</span>
-              <span className="numeral text-[16px] font-semibold leading-none text-[var(--theme-primary)]">
+              <span className="numeral text-subheading font-semibold leading-none text-[var(--theme-primary)]">
                 {currencyFmt.format(designStats.price)}
               </span>
             </div>
@@ -811,7 +811,7 @@ export default function StudioPage() {
               ].map((s) => (
                 <div key={s.k} className="px-4 py-3 text-center">
                   <span className="label-micro block">{s.k}</span>
-                  <span className="numeral mt-0.5 block text-[15px] font-semibold text-[var(--color-text-primary)]">
+                  <span className="numeral mt-0.5 block text-subheading font-semibold text-[var(--color-text-primary)]">
                     {s.v}
                   </span>
                 </div>
@@ -819,7 +819,7 @@ export default function StudioPage() {
             </div>
 
             <div
-              className={`flex items-center justify-center gap-2 border-t px-4 py-2.5 text-[12px] font-semibold ${
+              className={`flex items-center justify-center gap-2 border-t px-4 py-2.5 text-small font-semibold ${
                 fitTone === 'success'
                   ? 'border-[color-mix(in_srgb,var(--color-success-fg)_20%,transparent)] bg-[var(--color-success-bg)] text-[var(--color-success-fg)]'
                   : fitTone === 'danger'
@@ -872,10 +872,10 @@ export default function StudioPage() {
       <section className="mt-6">
         <div className="mb-4 flex items-baseline justify-between gap-4">
           <div>
-            <h2 className="font-serif text-[24px] font-semibold leading-tight tracking-tight text-[var(--color-text-primary)]">
+            <h2 className="font-serif text-title font-semibold leading-tight tracking-tight text-[var(--color-text-primary)]">
               Masterpiece archives
             </h2>
-            <p className="mt-1 text-[13px] text-[var(--color-text-muted)]">
+            <p className="mt-1 text-label text-[var(--color-text-muted)]">
               Start from a studio composition, then make it yours.
             </p>
           </div>
@@ -904,10 +904,10 @@ export default function StudioPage() {
                     style={{ backgroundColor: secStone.hex }}
                   />
                 </span>
-                <span className="block font-serif text-[15px] font-semibold leading-tight text-[var(--color-text-primary)]">
+                <span className="block font-serif text-subheading font-semibold leading-tight text-[var(--color-text-primary)]">
                   {p.name}
                 </span>
-                <span className="mt-1 block text-[11px] leading-snug text-[var(--color-text-muted)]">
+                <span className="mt-1 block text-micro leading-snug text-[var(--color-text-muted)]">
                   {p.sub}
                 </span>
               </button>

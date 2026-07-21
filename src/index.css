@@ -18,6 +18,52 @@
   --font-sans: "Inter", system-ui, sans-serif;
   --font-mono: "JetBrains Mono", ui-monospace, monospace;
 
+  /* --- Type scale --------------------------------------------------------
+     Eight steps, each carrying its own line-height and weight.
+
+     This block is the scale the file's header comment always claimed existed.
+     Before it, components hand-picked 16 distinct arbitrary sizes —
+     `text-[12px]` x20, `text-[11px]` x19, `text-[13px]` x14, plus one-offs
+     including `text-[12.5px]` — which is the same ad-hoc pattern the redesign
+     set out to remove. Use these utilities (`text-body`, `text-micro`, …)
+     rather than adding new bracket values.
+
+     Ratio is deliberately loose at the top (display/title carry the serif) and
+     tight at the bottom, where 11/12/13 are all genuinely distinct roles in a
+     dense configurator UI. -------------------------------------------------- */
+  --text-display: 32px;
+  --text-display--line-height: 1.05;
+  --text-display--letter-spacing: -0.02em;
+  --text-display--font-weight: 600;
+
+  --text-title: 24px;
+  --text-title--line-height: 1.15;
+  --text-title--letter-spacing: -0.015em;
+  --text-title--font-weight: 600;
+
+  --text-heading: 20px;
+  --text-heading--line-height: 1.2;
+  --text-heading--letter-spacing: -0.01em;
+  --text-heading--font-weight: 600;
+
+  --text-subheading: 16px;
+  --text-subheading--line-height: 1.35;
+  --text-subheading--font-weight: 600;
+
+  --text-body: 14px;
+  --text-body--line-height: 1.5;
+
+  --text-label: 13px;
+  --text-label--line-height: 1.4;
+  --text-label--font-weight: 500;
+
+  --text-small: 12px;
+  --text-small--line-height: 1.45;
+
+  --text-micro: 11px;
+  --text-micro--line-height: 1.45;
+  --text-micro--font-weight: 500;
+
   /* --- Ink / neutral ramp (warm grey) ------------------------------------ */
   --color-obsidian-50: #faf9f6;
   --color-obsidian-100: #f2f0eb;
@@ -352,9 +398,9 @@ label:has(> input.sr-only-x:focus-visible) {
    frequently with the same class duplicated twice in one attribute. */
 .label-micro {
   font-family: var(--font-mono);
-  font-size: 11px;
-  line-height: 1.45;
-  font-weight: 500;
+  font-size: var(--text-micro);
+  line-height: var(--text-micro--line-height);
+  font-weight: var(--text-micro--font-weight);
   text-transform: uppercase;
   letter-spacing: 0.14em;
   color: var(--color-text-muted);

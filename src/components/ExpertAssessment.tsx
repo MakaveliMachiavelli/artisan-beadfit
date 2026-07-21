@@ -53,7 +53,7 @@ export const ExpertAssessment: React.FC<ExpertAssessmentProps> = ({ expertAnalys
       <div className="flex h-full flex-col gap-5">
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
-            <h3 className="font-serif text-[20px] font-semibold leading-tight tracking-tight text-[var(--color-text-primary)]">
+            <h3 className="font-serif text-heading font-semibold leading-tight tracking-tight text-[var(--color-text-primary)]">
               Expert assessment
             </h3>
             <p className="label-micro mt-1">Live design critique</p>
@@ -61,7 +61,7 @@ export const ExpertAssessment: React.FC<ExpertAssessmentProps> = ({ expertAnalys
           <Badge tone="accent">{expertAnalysis.colorHarmony}</Badge>
         </div>
 
-        <blockquote className="border-l-2 border-[var(--color-gold-300)] pl-3.5 font-serif text-[16px] italic leading-relaxed text-[var(--color-text-secondary)]">
+        <blockquote className="border-l-2 border-[var(--color-gold-300)] pl-3.5 font-serif text-subheading italic leading-relaxed text-[var(--color-text-secondary)]">
           {expertAnalysis.expertVerdict}
         </blockquote>
 
@@ -77,7 +77,7 @@ export const ExpertAssessment: React.FC<ExpertAssessmentProps> = ({ expertAnalys
         {expertAnalysis.hardnessWarning && (
           <div
             role="status"
-            className="mt-auto flex items-start gap-2.5 rounded-[var(--radius-sm)] border border-[color-mix(in_srgb,var(--color-warning-fg)_22%,transparent)] bg-[var(--color-warning-bg)] p-3 text-[12px] leading-relaxed text-[var(--color-warning-fg)]"
+            className="mt-auto flex items-start gap-2.5 rounded-[var(--radius-sm)] border border-[color-mix(in_srgb,var(--color-warning-fg)_22%,transparent)] bg-[var(--color-warning-bg)] p-3 text-small leading-relaxed text-[var(--color-warning-fg)]"
           >
             <Info className="mt-px h-4 w-4 shrink-0" />
             <span>{expertAnalysis.hardnessWarning}</span>
