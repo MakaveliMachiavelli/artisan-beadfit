@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect, Suspense, lazy } from 'react';
+import React, { useState, useMemo, useEffect, lazy } from 'react';
 import { useStudioStore } from '../store/useStudioStore';
 import { useCatalogStore } from '../store/useCatalogStore';
 import { useDesignStore } from '../store/useDesignStore';
@@ -55,46 +55,22 @@ import { useCartStore } from "../store/useCartStore";
 import { useSavedDesignsStore } from "../store/useSavedDesignsStore";
 import { Save } from "lucide-react";
 import { AuthModal } from "../components/AuthModal";
+import { SafeSection, ErrorBoundary } from "../components/ErrorBoundary";
 import { LogOut, User } from "lucide-react";
 
-const LazyBackground3D = lazy(() => import('../components/Background3D').then(m => ({ default: m.Background3D })));
-const Background3D = (props: any) => <Suspense fallback={null}><LazyBackground3D {...props} /></Suspense>;
-
-
-const LazyBracelet3D = lazy(() => import('../components/Bracelet3D').then(m => ({ default: m.Bracelet3D })));
-const Bracelet3D = (props: any) => <Suspense fallback={null}><LazyBracelet3D {...props} /></Suspense>;
-
-
-const LazyBlueprint2D = lazy(() => import('../components/Blueprint2D').then(m => ({ default: m.Blueprint2D })));
-const Blueprint2D = (props: any) => <Suspense fallback={null}><LazyBlueprint2D {...props} /></Suspense>;
-
-
-const LazyExpertAssessment = lazy(() => import('../components/ExpertAssessment').then(m => ({ default: m.ExpertAssessment })));
-const ExpertAssessment = (props: any) => <Suspense fallback={null}><LazyExpertAssessment {...props} /></Suspense>;
-
-
-const LazyAdminPanelModal = lazy(() => import('../components/AdminPanelModal').then(m => ({ default: m.AdminPanelModal })));
-const AdminPanelModal = (props: any) => <Suspense fallback={null}><LazyAdminPanelModal {...props} /></Suspense>;
-
-
-const LazyFitCalibrationPanel = lazy(() => import('../components/FitCalibrationPanel').then(m => ({ default: m.FitCalibrationPanel })));
-const FitCalibrationPanel = (props: any) => <Suspense fallback={null}><LazyFitCalibrationPanel {...props} /></Suspense>;
-
-
-const LazyLetterBeadSequencer = lazy(() => import('../components/LetterBeadSequencer').then(m => ({ default: m.LetterBeadSequencer })));
-const LetterBeadSequencer = (props: any) => <Suspense fallback={null}><LazyLetterBeadSequencer {...props} /></Suspense>;
-
-
-const LazySequenceEditorPanel = lazy(() => import('../components/SequenceEditorPanel').then(m => ({ default: m.SequenceEditorPanel })));
-const SequenceEditorPanel = (props: any) => <Suspense fallback={null}><LazySequenceEditorPanel {...props} /></Suspense>;
-
-
-const LazyGemstoneSelectorPanel = lazy(() => import('../components/GemstoneSelectorPanel').then(m => ({ default: m.GemstoneSelectorPanel })));
-const GemstoneSelectorPanel = (props: any) => <Suspense fallback={null}><LazyGemstoneSelectorPanel {...props} /></Suspense>;
-
-
-const LazyCheckoutModal = lazy(() => import('../components/CheckoutModal').then(m => ({ default: m.CheckoutModal })));
-const CheckoutModal = (props: any) => <Suspense fallback={null}><LazyCheckoutModal {...props} /></Suspense>;
+// NOTE: these are deliberately bare `lazy()` calls, NOT wrapped in
+// `(props: any) => ...`. That wrapper erased every prop contract in this file
+// and is why missing required props reached the browser as blank screens
+// instead of failing `tsc`. Suspense + error handling now live in <SafeSection>.
+const Bracelet3D = lazy(() => import('../components/Bracelet3D').then(m => ({ default: m.Bracelet3D })));
+const Blueprint2D = lazy(() => import('../components/Blueprint2D').then(m => ({ default: m.Blueprint2D })));
+const ExpertAssessment = lazy(() => import('../components/ExpertAssessment').then(m => ({ default: m.ExpertAssessment })));
+const AdminPanelModal = lazy(() => import('../components/AdminPanelModal').then(m => ({ default: m.AdminPanelModal })));
+const FitCalibrationPanel = lazy(() => import('../components/FitCalibrationPanel').then(m => ({ default: m.FitCalibrationPanel })));
+const LetterBeadSequencer = lazy(() => import('../components/LetterBeadSequencer').then(m => ({ default: m.LetterBeadSequencer })));
+const SequenceEditorPanel = lazy(() => import('../components/SequenceEditorPanel').then(m => ({ default: m.SequenceEditorPanel })));
+const GemstoneSelectorPanel = lazy(() => import('../components/GemstoneSelectorPanel').then(m => ({ default: m.GemstoneSelectorPanel })));
+const CheckoutModal = lazy(() => import('../components/CheckoutModal').then(m => ({ default: m.CheckoutModal })));
 
 
 
@@ -746,7 +722,8 @@ export default function StudioPage() {
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start relative">
         {/* Left Column: Gemstone & Styling Controls */}
         <div className="lg:col-span-4 space-y-6">
-          <GemstoneSelectorPanel 
+          <SafeSection label="Gemstone selector">
+          <GemstoneSelectorPanel
             gemstoneNames={gemstoneNames}
             mainStone={mainStone}
             setMainStone={setMainStone}
@@ -760,7 +737,9 @@ export default function StudioPage() {
             setMainQuality={setMainQuality}
             markup={markup}
           />
-          <FitCalibrationPanel 
+          </SafeSection>
+          <SafeSection label="Fit calibration">
+          <FitCalibrationPanel
             unit={unit}
             setUnit={setUnit}
             wristMm={wristMm}
@@ -769,13 +748,17 @@ export default function StudioPage() {
             setEase={setEase}
             showToast={showToast}
           />
-          <LetterBeadSequencer 
+          </SafeSection>
+          <SafeSection label="Letter bead sequencer">
+          <LetterBeadSequencer
             customWord={customWord}
             setCustomWord={setCustomWord}
             letterStyle={letterStyle}
             setLetterStyle={setLetterStyle}
           />
-          <SequenceEditorPanel 
+          </SafeSection>
+          <SafeSection label="Sequence editor">
+          <SequenceEditorPanel
             availableSpacers={availableSpacers}
             activeSpacerId={activeSpacerId}
             setActiveSpacerId={setActiveSpacerId}
@@ -790,24 +773,28 @@ export default function StudioPage() {
             handleAddBead={handleAddBead}
             handleRemoveBead={handleRemoveBead}
           />
+          </SafeSection>
         </div>
 
         {/* Center Column: 3D Visualization */}
         <div className="lg:col-span-8 flex flex-col gap-6">
           {/* Main 3D Stage */}
           <div className="h-[60vh] lg:h-[70vh] rounded-xl overflow-hidden shadow-2xl border hairline border-obsidian-200/50 bg-[#f2f2f4]">
-            <Bracelet3D
-              beads={beads}
-              activeCharm={activeCharm}
-              selectedBeadIndex={selectedBeadIndex}
-              setSelectedBeadIndex={setSelectedBeadIndex}
-              blueprintRadius={(wristMm + ease) / (2 * Math.PI) / 10}
-              wristMm={wristMm}
-              ease={ease}
-            />
+            <SafeSection label="3D preview">
+              <Bracelet3D
+                beads={beads}
+                activeCharm={activeCharm}
+                selectedBeadIndex={selectedBeadIndex}
+                setSelectedBeadIndex={setSelectedBeadIndex}
+                blueprintRadius={(wristMm + ease) / (2 * Math.PI) / 10}
+                wristMm={wristMm}
+                ease={ease}
+              />
+            </SafeSection>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <SafeSection label="2D blueprint">
             <Blueprint2D
                beads={beads}
                gemstoneNames={gemstoneNames}
@@ -822,9 +809,12 @@ export default function StudioPage() {
                spinSpeed={spinSpeed}
                blueprintMetrics={blueprintMetrics}
             />
-            <ExpertAssessment 
+            </SafeSection>
+            <SafeSection label="Expert assessment">
+            <ExpertAssessment
                expertAnalysis={expertAnalysis}
             />
+            </SafeSection>
           </div>
           
           {/* Presets Gallery (from original UI) */}
@@ -860,24 +850,45 @@ export default function StudioPage() {
       
       {/* Modals */}
       {isOrderOpen && (
-        <CheckoutModal
-          isOpen={isOrderOpen}
-          onClose={() => setIsOrderOpen(false)}
-          beads={beads}
-          activeCharm={activeCharm}
-          designStats={designStats}
-          mainStone={mainStone}
-          mainSize={mainSize}
-          mainQuality={mainQuality}
-          wristMm={wristMm}
-          ease={ease}
-          packaging={packaging}
-          packingCost={packingCost}
-          showToast={showToast}
-        />
+        <SafeSection label="Checkout" compact>
+          <CheckoutModal
+            isOpen={isOrderOpen}
+            onClose={() => setIsOrderOpen(false)}
+            beads={beads}
+            activeCharm={activeCharm}
+            designStats={designStats}
+            mainStone={mainStone}
+            mainSize={mainSize}
+            mainQuality={mainQuality}
+            wristMm={wristMm}
+            ease={ease}
+            packaging={packaging}
+            packingCost={packingCost}
+            showToast={showToast}
+          />
+        </SafeSection>
       )}
-      {isAdminOpen && <AdminPanelModal onClose={() => setIsAdminOpen(false)} />}
-      {isAuthOpen && <AuthModal isOpen={isAuthOpen} onClose={() => setIsAuthOpen(false)} />}
+      {isAdminOpen && (
+        <SafeSection label="Admin panel" compact>
+          <AdminPanelModal
+            isOpen={isAdminOpen}
+            onClose={() => setIsAdminOpen(false)}
+            markup={markup}
+            setMarkup={setMarkup}
+            laborCost={laborCost}
+            setLaborCost={setLaborCost}
+            packingCost={packingCost}
+            setPackingCost={setPackingCost}
+            catalog={catalog}
+            showToast={showToast}
+          />
+        </SafeSection>
+      )}
+      {isAuthOpen && (
+        <ErrorBoundary label="Sign in" compact>
+          <AuthModal isOpen={isAuthOpen} onClose={() => setIsAuthOpen(false)} />
+        </ErrorBoundary>
+      )}
     </>
   );
 };
