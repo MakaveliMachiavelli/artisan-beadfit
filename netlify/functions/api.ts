@@ -6,6 +6,7 @@ import cookieParser from 'cookie-parser';
 import rateLimit from 'express-rate-limit';
 import { authRouter } from '../../src/server/auth';
 import { commerceRouter } from '../../src/server/commerce';
+import { shopRouter } from '../../src/server/shop';
 
 dotenv.config();
 
@@ -33,6 +34,7 @@ const authLimiter = rateLimit({
 
 app.use('/api/auth', authLimiter, authRouter);
 app.use('/api/commerce', commerceRouter);
+app.use('/api/shop', shopRouter);
 
 let aiClient: GoogleGenAI | null = null;
 function getAIClient() {

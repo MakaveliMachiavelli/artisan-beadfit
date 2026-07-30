@@ -3,6 +3,8 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import StudioPage from './pages/StudioPage';
 import { ErrorBoundary } from './components/ErrorBoundary';
 
+import CollectionPage from './pages/CollectionPage';
+
 export default function App() {
   return (
     <Router>
@@ -13,8 +15,9 @@ export default function App() {
           <ErrorBoundary label="Studio">
             <Routes>
               <Route path="/studio" element={<StudioPage />} />
-              {/* Redirect root to studio for now until we build the premium landing page */}
-              <Route path="/" element={<Navigate to="/studio" replace />} />
+              <Route path="/collection" element={<CollectionPage />} />
+              {/* Redirect root to collection for now until we build the premium landing page */}
+              <Route path="/" element={<Navigate to="/collection" replace />} />
             </Routes>
           </ErrorBoundary>
         </main>

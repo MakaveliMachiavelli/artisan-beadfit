@@ -4,11 +4,10 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "netlify dev",
+    "dev": "npx netlify dev",
     "build": "vite build",
-    "start": "netlify serve",
-    "clean": "rm -rf dist",
     "lint": "tsc --noEmit",
+    "preview": "vite preview",
     "test": "vitest run",
     "seed:shop": "tsx prisma/seed-shop.ts",
     "gen:placeholder-spin": "tsx scripts/generate-placeholder-spin.ts"

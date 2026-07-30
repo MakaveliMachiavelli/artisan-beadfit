@@ -756,6 +756,9 @@ export default function StudioPage() {
             </div>
 
             <div className="flex items-center gap-2">
+              <Button variant="secondary" size="md" onClick={() => window.location.href = '/collection'}>
+                Ready-Made Collection
+              </Button>
               <Button variant="primary" size="md" onClick={() => setIsOrderOpen(true)}>
                 Review design
               </Button>
