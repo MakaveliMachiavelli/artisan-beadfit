@@ -38,6 +38,23 @@ shopRouter.get('/items', async (req, res) => {
       }
     });
 
+    items.unshift({
+      id: 'test-2d-gallery',
+      slug: 'test-2d-gallery',
+      title: 'Real Photo Test',
+      description: 'Testing the 2.5D spinner.',
+      price: 150,
+      status: 'ACTIVE',
+      composition: '["Onyx"]',
+      sizeMm: 8,
+      wristMm: 165,
+      spinBasePath: '/images/test-gallery',
+      spinFrameCount: 1,
+      inStock: 5,
+      createdAt: new Date(),
+      updatedAt: new Date()
+    } as any);
+
     res.json(items);
   } catch (error: any) {
     console.error('Failed to fetch shop items:', error.message, error.stack);

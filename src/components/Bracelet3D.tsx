@@ -196,33 +196,25 @@ export const Bracelet3D: React.FC<Bracelet3DProps> = ({
     
     controlsRef.current = controls;
 
-    const ambientLight = new THREE.AmbientLight(0xffffff, 0.35);
+    const ambientLight = new THREE.AmbientLight(0xffffff, 0.5); // boosted
     scene.add(ambientLight);
 
-    const keyLight = new THREE.DirectionalLight(0xffffff, 1.6);
+    const keyLight = new THREE.DirectionalLight(0xffffff, 2.2); // boosted for studio punch
     keyLight.position.set(5, 10, 5);
     keyLight.castShadow = true;
-    // 1024 rather than 2048: the shadow is a soft contact pool under the
-    // bracelet, so the extra resolution is not visible at this camera distance.
-    keyLight.shadow.mapSize.width = 1024;
-    keyLight.shadow.mapSize.height = 1024;
-    keyLight.shadow.bias = -0.0005;
-    keyLight.shadow.normalBias = 0.02;
+    // High-res shadows for photorealism
+    keyLight.shadow.mapSize.width = 2048;
+    keyLight.shadow.mapSize.height = 2048;
+    keyLight.shadow.bias = -0.0001;
+    keyLight.shadow.normalBias = 0.01;
+    keyLight.shadow.camera.near = 0.5;
+    keyLight.shadow.camera.far = 50;
     scene.add(keyLight);
 
     // Rim light picks out the silhouette of dark stones like Onyx.
-    const rimLight = new THREE.DirectionalLight(0xdfe8ff, 0.5);
+    const rimLight = new THREE.DirectionalLight(0xffffff, 1.2); // boosted and white
     rimLight.position.set(-6, 4, -8);
     scene.add(rimLight);
-
-    // Floor (hide in presentation mode)
-    const groundGeo = new THREE.PlaneGeometry(300, 300);
-    const groundMat = new THREE.ShadowMaterial({ opacity: 0.1 });
-    const ground = new THREE.Mesh(groundGeo, groundMat);
-    ground.rotation.x = -Math.PI / 2;
-    ground.receiveShadow = true;
-    ground.visible = !presentationMode;
-    scene.add(ground);
 
     // If presentationMode, stand the bracelet upright like on a display
     // PI/2 = fully vertical, minus a small angle tilts the top backward

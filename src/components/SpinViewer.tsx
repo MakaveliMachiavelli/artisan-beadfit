@@ -20,35 +20,7 @@ export function SpinViewer({
   wristMm = 165,
   className = "" 
 }: ImageGalleryProps) {
-  // If we have photography (a single top-down image works best)
-  if (spinFrameCount > 0 && spinBasePath) {
-    return (
-      <div 
-        className={`relative w-full h-full flex items-center justify-center bg-white ${className}`}
-        style={{ perspective: '1000px' }}
-      >
-        <div 
-          className="w-[110%] h-[110%]"
-          style={{ 
-            transform: 'rotateX(45deg)', 
-            transformStyle: 'preserve-3d' 
-          }}
-        >
-          {/* We just use the first frame for the spinner */}
-          <img 
-            src={`${spinBasePath}/frame-01.jpg`} 
-            alt="Product view"
-            className="w-full h-full object-contain mix-blend-multiply"
-            style={{
-              animation: 'spin 12s linear infinite'
-            }}
-          />
-        </div>
-      </div>
-    );
-  }
-
-  // Fallback to 3D render if no photography yet
+  // Enforce 3D render for all items to ensure photorealistic spin
   let beads: any[] = [];
   if (composition) {
     try {
