@@ -153,7 +153,8 @@ export const Bracelet3D: React.FC<Bracelet3DProps> = ({
     const camera = new THREE.PerspectiveCamera(45, width / height, 0.1, 1000);
     if (presentationMode) {
       // Position camera above and in front, looking down at ~45 degrees
-      camera.position.set(0, 20, 25);
+      // Close enough that the bracelet fills ~70% of the frame
+      camera.position.set(0, 14, 18);
       camera.lookAt(0, 0, 0);
     } else {
       camera.position.set(0, 18, 22);
