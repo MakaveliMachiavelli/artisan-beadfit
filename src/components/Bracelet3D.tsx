@@ -152,9 +152,8 @@ export const Bracelet3D: React.FC<Bracelet3DProps> = ({
 
     const camera = new THREE.PerspectiveCamera(45, width / height, 0.1, 1000);
     if (presentationMode) {
-      // Position camera above and in front, looking down at ~45 degrees
-      // Close enough that the bracelet fills ~70% of the frame
-      camera.position.set(0, 14, 18);
+      // Look straight at the standing bracelet, slightly above center
+      camera.position.set(0, 3, 22);
       camera.lookAt(0, 0, 0);
     } else {
       camera.position.set(0, 18, 22);
@@ -223,11 +222,11 @@ export const Bracelet3D: React.FC<Bracelet3DProps> = ({
     ground.visible = !presentationMode;
     scene.add(ground);
 
-    // If presentationMode, tilt the bracelet ~45 degrees back
-    // so it looks like it's resting on a display, viewed from slightly above
+    // If presentationMode, stand the bracelet upright like on a display
+    // PI/2 = fully vertical, minus a small angle tilts the top backward
     const tiltGroup = new THREE.Group();
     if (presentationMode) {
-      tiltGroup.rotation.x = Math.PI / 4; // 45 degree tilt back
+      tiltGroup.rotation.x = Math.PI / 2 - 0.25; // Stand up, top tilted ~15° back
     }
     scene.add(tiltGroup);
 
