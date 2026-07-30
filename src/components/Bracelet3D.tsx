@@ -148,9 +148,14 @@ export const Bracelet3D: React.FC<Bracelet3DProps> = ({
     sceneRef.current = scene;
 
     const width = container.clientWidth || 380;
-    const height = container.clientHeight || 380;
-    const camera = new THREE.PerspectiveCamera(40, width / height, 0.1, 1000);
-    camera.position.set(0, 14, 20);
+    const height = container.clientHeight || 450;
+
+    const camera = new THREE.PerspectiveCamera(45, width / height, 0.1, 1000);
+    if (presentationMode) {
+      camera.position.set(0, 0, 75); // Look straight on, far enough to see standing 50mm diameter
+    } else {
+      camera.position.set(0, 18, 22);
+    }
     cameraRef.current = camera;
 
     renderer.setSize(width, height);
