@@ -122,6 +122,7 @@ export function SpinViewer({
         blueprintRadius={25}
         wristMm={wristMm || 165}
         ease={10}
+        presentationMode={true}
       />
     </div>
   );

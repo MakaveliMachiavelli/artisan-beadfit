@@ -15,6 +15,7 @@ interface Bracelet3DProps {
   blueprintRadius: number; // inner fit radius / center radius
   wristMm: number;
   ease: number;
+  presentationMode?: boolean; // disables interaction, stands bracelet up, white background
 }
 
 type Quality = 'high' | 'low';
@@ -71,6 +72,7 @@ export const Bracelet3D: React.FC<Bracelet3DProps> = ({
   setSelectedBeadIndex,
   wristMm,
   ease,
+  presentationMode = false,
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const tooltipRef = useRef<HTMLDivElement>(null);
@@ -142,7 +144,7 @@ export const Bracelet3D: React.FC<Bracelet3DProps> = ({
     }
 
     const scene = new THREE.Scene();
-    scene.background = new THREE.Color('#f2f2f4');
+    scene.background = new THREE.Color(presentationMode ? '#ffffff' : '#f2f2f4');
     sceneRef.current = scene;
 
     const width = container.clientWidth || 380;
@@ -176,6 +178,13 @@ export const Bracelet3D: React.FC<Bracelet3DProps> = ({
     controls.maxPolarAngle = Math.PI / 2 + 0.1;
     controls.minDistance = 10;
     controls.maxDistance = 45;
+    
+    if (presentationMode) {
+      controls.enableZoom = false;
+      controls.enablePan = false;
+      controls.enableRotate = false;
+    }
+    
     controlsRef.current = controls;
 
     const ambientLight = new THREE.AmbientLight(0xffffff, 0.35);
@@ -197,16 +206,24 @@ export const Bracelet3D: React.FC<Bracelet3DProps> = ({
     rimLight.position.set(-6, 4, -8);
     scene.add(rimLight);
 
-    const groundGeo = new THREE.PlaneGeometry(100, 100);
-    const groundMat = new THREE.ShadowMaterial({ opacity: 0.15 });
+    // Floor (hide in presentation mode)
+    const groundGeo = new THREE.PlaneGeometry(300, 300);
+    const groundMat = new THREE.ShadowMaterial({ opacity: 0.1 });
     const ground = new THREE.Mesh(groundGeo, groundMat);
     ground.rotation.x = -Math.PI / 2;
-    ground.position.y = -2.5;
     ground.receiveShadow = true;
+    ground.visible = !presentationMode;
     scene.add(ground);
 
+    // If presentationMode, we tilt the entire assembly up
+    const tiltGroup = new THREE.Group();
+    if (presentationMode) {
+      tiltGroup.rotation.x = Math.PI / 2 - 0.2; // Stand up, tilt slightly
+    }
+    scene.add(tiltGroup);
+
     const beadsGroup = new THREE.Group();
-    scene.add(beadsGroup);
+    tiltGroup.add(beadsGroup);
     beadsGroupRef.current = beadsGroup;
 
     // Dev-only handle. requestAnimationFrame is paused in background/headless
