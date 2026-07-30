@@ -1,6 +1,5 @@
 import 'dotenv/config';
-import { PrismaClient } from '@prisma/client';
-import { PrismaBetterSqlite3 } from '@prisma/adapter-better-sqlite3';
+import { prisma } from '../src/db/client';
 import { DESIGN_PRESETS, GEMSTONE_DB, generateDefaultCatalog } from '../src/data';
 import { calculateBasePrice } from '../src/pricing';
 import { calculateBeadCountForCircumference } from '../src/geometry';
@@ -21,11 +20,7 @@ import type { BeadInstance } from '../src/types';
  * un-publishes something.
  */
 
-const prisma = new PrismaClient({
-  adapter: new PrismaBetterSqlite3({
-    url: process.env.DATABASE_URL?.replace('file:', '') || './dev.db',
-  }),
-});
+
 
 const MARKUP = 2.5;
 const LABOR = 0;

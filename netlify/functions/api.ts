@@ -1,28 +1,21 @@
 import express from 'express';
-import path from 'path';
-import { createServer as createViteServer } from 'vite';
+import serverless from 'serverless-http';
 import { GoogleGenAI, GenerateVideosOperation } from '@google/genai';
 import dotenv from 'dotenv';
 import cookieParser from 'cookie-parser';
 import rateLimit from 'express-rate-limit';
-import { authRouter } from './src/server/auth';
-import { commerceRouter } from './src/server/commerce';
+import { authRouter } from '../../src/server/auth';
+import { commerceRouter } from '../../src/server/commerce';
 
 dotenv.config();
 
 const app = express();
 app.set('trust proxy', 1);
-const PORT = 3000;
 
 app.use(cookieParser());
 app.use(
   express.json({
     limit: '50mb',
-    // Stash the exact bytes received alongside the parsed body. PayMongo's
-    // webhook signature is an HMAC over the raw request bytes; verifying it
-    // against a re-serialized JSON.stringify(req.body) would silently fail
-    // for the same reason webhook signatures never verify against a
-    // reformatted payload - JSON.stringify does not round-trip byte-for-byte.
     verify: (req, _res, buf) => {
       (req as any).rawBody = buf;
     },
@@ -30,18 +23,17 @@ app.use(
 );
 app.use(express.urlencoded({ limit: '50mb', extended: true }));
 
-// Apply strict rate limiting to auth endpoints
 const authLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 20, // Limit each IP to 20 requests per windowMs
+  windowMs: 15 * 60 * 1000,
+  max: 20,
   standardHeaders: true,
   legacyHeaders: false,
   validate: { xForwardedForHeader: false, trustProxy: false }
 });
+
 app.use('/api/auth', authLimiter, authRouter);
 app.use('/api/commerce', commerceRouter);
 
-// Initialize GoogleGenAI client lazy-style to prevent crashes if missing key
 let aiClient: GoogleGenAI | null = null;
 function getAIClient() {
   if (!aiClient) {
@@ -61,7 +53,6 @@ function getAIClient() {
   return aiClient;
 }
 
-// 1. Generate Video Endpoint
 app.post('/api/generate-video', async (req, res) => {
   try {
     const { imageBase64, mimeType, prompt, aspectRatio } = req.body;
@@ -71,9 +62,6 @@ app.post('/api/generate-video', async (req, res) => {
     }
 
     const ai = getAIClient();
-    
-    // Model requested: veo-3.1-fast-generate-preview
-    // Let's strip standard data:image/png;base64, prefix if present
     const base64Data = imageBase64.replace(/^data:image\/\w+;base64,/, "");
 
     const operation = await ai.models.generateVideos({
@@ -97,7 +85,6 @@ app.post('/api/generate-video', async (req, res) => {
   }
 });
 
-// 2. Poll Video Status Endpoint
 app.post('/api/video-status', async (req, res) => {
   try {
     const { operationName } = req.body;
@@ -121,7 +108,6 @@ app.post('/api/video-status', async (req, res) => {
   }
 });
 
-// 3. Download Video Endpoint
 app.post('/api/video-download', async (req, res) => {
   try {
     const { operationName } = req.body;
@@ -172,25 +158,4 @@ app.post('/api/video-download', async (req, res) => {
   }
 });
 
-// Setup Vite development middleware or static asset hosting in production
-async function startServer() {
-  if (process.env.NODE_ENV !== "production") {
-    const vite = await createViteServer({
-      server: { middlewareMode: true },
-      appType: "spa",
-    });
-    app.use(vite.middlewares);
-  } else {
-    const distPath = path.join(process.cwd(), 'dist');
-    app.use(express.static(distPath));
-    app.get('*all', (req, res) => {
-      res.sendFile(path.join(distPath, 'index.html'));
-    });
-  }
-
-  app.listen(PORT, "0.0.0.0", () => {
-    console.log(`Server running on http://localhost:${PORT}`);
-  });
-}
-
-startServer();
+export const handler = serverless(app);
