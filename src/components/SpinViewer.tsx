@@ -20,96 +20,30 @@ export function SpinViewer({
   wristMm = 165,
   className = "" 
 }: ImageGalleryProps) {
-  const [currentIndex, setCurrentIndex] = useState(1);
-
-  const [isHovered, setIsHovered] = useState(false);
-
-  // Preload images
-  useEffect(() => {
-    if (spinFrameCount > 0 && spinBasePath) {
-      for (let i = 1; i <= spinFrameCount; i++) {
-        const img = new Image();
-        img.src = `${spinBasePath}/frame-${i.toString().padStart(2, '0')}.jpg`;
-      }
-    }
-  }, [spinBasePath, spinFrameCount]);
-
-  // Auto-play slideshow
-  useEffect(() => {
-    if (spinFrameCount <= 1 || !spinBasePath || isHovered) return;
-    const interval = setInterval(() => {
-      setCurrentIndex(prev => (prev >= spinFrameCount ? 1 : prev + 1));
-    }, 3500); // Crossfade every 3.5s
-    return () => clearInterval(interval);
-  }, [spinFrameCount, spinBasePath, isHovered]);
-
-  const nextImage = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    setCurrentIndex(prev => (prev >= spinFrameCount ? 1 : prev + 1));
-  };
-
-  const prevImage = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    setCurrentIndex(prev => (prev <= 1 ? spinFrameCount : prev - 1));
-  };
-
-  // If we have photography (2-5 images)
+  // If we have photography (a single top-down image works best)
   if (spinFrameCount > 0 && spinBasePath) {
     return (
       <div 
-        className={`relative group ${className} bg-white`}
-        onMouseEnter={() => setIsHovered(true)}
-        onMouseLeave={() => setIsHovered(false)}
+        className={`relative w-full h-full flex items-center justify-center bg-white ${className}`}
+        style={{ perspective: '1000px' }}
       >
-        {/* Render all images for smooth crossfade transitions */}
-        {Array.from({ length: spinFrameCount }).map((_, idx) => {
-          const frameNum = (idx + 1).toString().padStart(2, '0');
-          const isActive = currentIndex === idx + 1;
-          return (
-            <img 
-              key={idx}
-              src={`${spinBasePath}/frame-${frameNum}.jpg`} 
-              alt={`Product view ${idx + 1}`}
-              className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-700 ease-in-out mix-blend-multiply ${
-                isActive ? 'opacity-100 z-10' : 'opacity-0 z-0'
-              }`}
-            />
-          );
-        })}
-        
-        {/* Navigation Arrows (visible on hover) */}
-        {spinFrameCount > 1 && (
-          <>
-            <button 
-              onClick={prevImage}
-              className="absolute left-2 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white text-[var(--color-obsidian-900)] p-1.5 rounded-full opacity-0 group-hover:opacity-100 transition-opacity shadow-sm z-20"
-            >
-              <ChevronLeft className="w-5 h-5" />
-            </button>
-            <button 
-              onClick={nextImage}
-              className="absolute right-2 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white text-[var(--color-obsidian-900)] p-1.5 rounded-full opacity-0 group-hover:opacity-100 transition-opacity shadow-sm z-20"
-            >
-              <ChevronRight className="w-5 h-5" />
-            </button>
-            
-            {/* Dots */}
-            <div className="absolute bottom-3 left-0 right-0 flex justify-center gap-1.5 z-20">
-              {Array.from({ length: spinFrameCount }).map((_, idx) => (
-                <button
-                  key={idx} 
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setCurrentIndex(idx + 1);
-                  }}
-                  className={`w-1.5 h-1.5 rounded-full transition-colors ${
-                    currentIndex === idx + 1 ? 'bg-[var(--color-obsidian-900)] scale-110' : 'bg-[var(--color-obsidian-300)] hover:bg-[var(--color-obsidian-500)]'
-                  }`}
-                />
-              ))}
-            </div>
-          </>
-        )}
+        <div 
+          className="w-[110%] h-[110%]"
+          style={{ 
+            transform: 'rotateX(45deg)', 
+            transformStyle: 'preserve-3d' 
+          }}
+        >
+          {/* We just use the first frame for the spinner */}
+          <img 
+            src={`${spinBasePath}/frame-01.jpg`} 
+            alt="Product view"
+            className="w-full h-full object-contain mix-blend-multiply"
+            style={{
+              animation: 'spin 12s linear infinite'
+            }}
+          />
+        </div>
       </div>
     );
   }

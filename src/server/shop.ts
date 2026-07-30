@@ -37,6 +37,7 @@ shopRouter.get('/items', async (req, res) => {
         createdAt: 'desc',
       }
     });
+
     res.json(items);
   } catch (error: any) {
     console.error('Failed to fetch shop items:', error.message, error.stack);
