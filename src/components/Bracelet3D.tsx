@@ -82,6 +82,7 @@ export const Bracelet3D: React.FC<Bracelet3DProps> = ({
   const cameraRef = useRef<THREE.PerspectiveCamera | null>(null);
   const controlsRef = useRef<OrbitControls | null>(null);
   const beadsGroupRef = useRef<THREE.Group | null>(null);
+  const turntableGroupRef = useRef<THREE.Group | null>(null);
 
   // Per-instance caches. These hold GPU resources owned by THIS renderer's
   // context, so they must not be shared across mounts.
@@ -224,11 +225,15 @@ export const Bracelet3D: React.FC<Bracelet3DProps> = ({
 
     // If presentationMode, stand the bracelet upright like on a display
     // PI/2 = fully vertical, minus a small angle tilts the top backward
+    const turntableGroup = new THREE.Group();
+    scene.add(turntableGroup);
+    turntableGroupRef.current = turntableGroup;
+
     const tiltGroup = new THREE.Group();
     if (presentationMode) {
-      tiltGroup.rotation.x = Math.PI / 2 - 0.25; // Stand up, top tilted ~15° back
+      tiltGroup.rotation.x = Math.PI / 2 - 0.15; // Stand up, top tilted ~15° back
     }
-    scene.add(tiltGroup);
+    turntableGroup.add(tiltGroup);
 
     const beadsGroup = new THREE.Group();
     tiltGroup.add(beadsGroup);
@@ -336,7 +341,11 @@ export const Bracelet3D: React.FC<Bracelet3DProps> = ({
       controls.update();
 
       if (autoRotateRef.current) {
-        beadsGroup.rotation.y += presentationMode ? 0.004 : 0.003;
+        if (presentationMode && turntableGroupRef.current) {
+          turntableGroupRef.current.rotation.y += 0.004;
+        } else {
+          beadsGroup.rotation.y += 0.003;
+        }
       }
 
       // Springy settle toward each bead's target position.
