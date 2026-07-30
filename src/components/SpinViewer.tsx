@@ -1,8 +1,9 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Bracelet3D } from './Bracelet3D';
 import { generateDefaultCatalog } from '../data';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 
-interface SpinViewerProps {
+interface ImageGalleryProps {
   spinBasePath: string | null;
   spinFrameCount: number;
   composition: string | null;
@@ -18,13 +19,10 @@ export function SpinViewer({
   sizeMm = 8,
   wristMm = 165,
   className = "" 
-}: SpinViewerProps) {
-  const [currentFrame, setCurrentFrame] = useState(1);
-  const [isDragging, setIsDragging] = useState(false);
-  const [startX, setStartX] = useState(0);
-  const containerRef = useRef<HTMLDivElement>(null);
+}: ImageGalleryProps) {
+  const [currentIndex, setCurrentIndex] = useState(1);
 
-  // Preload images if we have them
+  // Preload images
   useEffect(() => {
     if (spinFrameCount > 0 && spinBasePath) {
       for (let i = 1; i <= spinFrameCount; i++) {
@@ -34,70 +32,61 @@ export function SpinViewer({
     }
   }, [spinBasePath, spinFrameCount]);
 
-  const handlePointerDown = (e: React.PointerEvent) => {
-    setIsDragging(true);
-    setStartX(e.clientX);
-    e.currentTarget.setPointerCapture(e.pointerId);
+  const nextImage = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setCurrentIndex(prev => (prev >= spinFrameCount ? 1 : prev + 1));
   };
 
-  const handlePointerMove = (e: React.PointerEvent) => {
-    if (!isDragging) return;
-    
-    // Calculate how far we dragged
-    const diffX = e.clientX - startX;
-    
-    // Sensitivity: how many pixels of drag = 1 frame change
-    const sensitivity = 5;
-    
-    if (Math.abs(diffX) > sensitivity) {
-      // Calculate new frame
-      const frameDelta = diffX > 0 ? -1 : 1;
-      
-      setCurrentFrame(prev => {
-        let next = prev + frameDelta;
-        if (next > spinFrameCount) next = 1;
-        if (next < 1) next = spinFrameCount;
-        return next;
-      });
-      
-      setStartX(e.clientX);
-    }
+  const prevImage = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setCurrentIndex(prev => (prev <= 1 ? spinFrameCount : prev - 1));
   };
 
-  const handlePointerUp = (e: React.PointerEvent) => {
-    setIsDragging(false);
-    e.currentTarget.releasePointerCapture(e.pointerId);
-  };
-
-  // If we have actual 360 photography
+  // If we have photography (2-5 images)
   if (spinFrameCount > 0 && spinBasePath) {
-    const frameNumber = currentFrame.toString().padStart(2, '0');
+    const frameNumber = currentIndex.toString().padStart(2, '0');
     return (
-      <div 
-        ref={containerRef}
-        className={`relative cursor-grab active:cursor-grabbing select-none ${className}`}
-        onPointerDown={handlePointerDown}
-        onPointerMove={handlePointerMove}
-        onPointerUp={handlePointerUp}
-        onPointerCancel={handlePointerUp}
-      >
+      <div className={`relative group ${className}`}>
         <img 
           src={`${spinBasePath}/frame-${frameNumber}.jpg`} 
-          alt="360 view"
-          className="w-full h-full object-cover pointer-events-none"
-          draggable={false}
+          alt={`Product view ${currentIndex}`}
+          className="w-full h-full object-cover transition-opacity duration-300"
         />
-        <div className="absolute bottom-4 left-0 right-0 flex justify-center pointer-events-none opacity-50">
-          <span className="bg-black/50 text-white text-xs px-3 py-1 rounded-full flex items-center gap-2">
-            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.59-8.4l5.67-5.67"/></svg>
-            Drag to spin
-          </span>
-        </div>
+        
+        {/* Navigation Arrows (visible on hover) */}
+        {spinFrameCount > 1 && (
+          <>
+            <button 
+              onClick={prevImage}
+              className="absolute left-2 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white text-[var(--color-obsidian-900)] p-1.5 rounded-full opacity-0 group-hover:opacity-100 transition-opacity shadow-sm"
+            >
+              <ChevronLeft className="w-5 h-5" />
+            </button>
+            <button 
+              onClick={nextImage}
+              className="absolute right-2 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white text-[var(--color-obsidian-900)] p-1.5 rounded-full opacity-0 group-hover:opacity-100 transition-opacity shadow-sm"
+            >
+              <ChevronRight className="w-5 h-5" />
+            </button>
+            
+            {/* Dots */}
+            <div className="absolute bottom-3 left-0 right-0 flex justify-center gap-1.5">
+              {Array.from({ length: spinFrameCount }).map((_, idx) => (
+                <div 
+                  key={idx} 
+                  className={`w-1.5 h-1.5 rounded-full transition-colors ${
+                    currentIndex === idx + 1 ? 'bg-[var(--color-obsidian-900)]' : 'bg-white/60 border border-[var(--color-obsidian-200)]'
+                  }`}
+                />
+              ))}
+            </div>
+          </>
+        )}
       </div>
     );
   }
 
-  // Fallback to 3D render if no photography
+  // Fallback to 3D render if no photography yet
   let beads: any[] = [];
   if (composition) {
     try {
