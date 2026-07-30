@@ -28,7 +28,12 @@ export default function CollectionPage() {
     fetch('/api/shop/items')
       .then(res => res.json())
       .then(data => {
-        setItems(data);
+        if (Array.isArray(data)) {
+          setItems(data);
+        } else {
+          console.error("API returned non-array data:", data);
+          setItems([]);
+        }
         setLoading(false);
       })
       .catch(err => {
