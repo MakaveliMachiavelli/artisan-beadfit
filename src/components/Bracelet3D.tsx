@@ -427,8 +427,7 @@ export const Bracelet3D: React.FC<Bracelet3DProps> = ({
       miscTexturesRef.current.forEach((t) => t.dispose());
       miscTexturesRef.current.clear();
 
-      groundGeo.dispose();
-      groundMat.dispose();
+
       envRT.dispose();
       scene.environment = null;
 
