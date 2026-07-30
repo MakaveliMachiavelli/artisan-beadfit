@@ -232,8 +232,8 @@ export const Bracelet3D: React.FC<Bracelet3DProps> = ({
 
     const tiltGroup = new THREE.Group();
     if (presentationMode) {
-      // Stand up, top tilted ~30° back (0.15 was ~8°, 0.52 is ~30°)
-      tiltGroup.rotation.x = Math.PI / 2 - 0.52; 
+      // Stand up, but tilted 45° back so we look down into the loop
+      tiltGroup.rotation.x = Math.PI / 4; 
     }
     turntableGroup.add(tiltGroup);
 
