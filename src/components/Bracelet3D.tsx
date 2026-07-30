@@ -152,7 +152,9 @@ export const Bracelet3D: React.FC<Bracelet3DProps> = ({
 
     const camera = new THREE.PerspectiveCamera(45, width / height, 0.1, 1000);
     if (presentationMode) {
-      camera.position.set(0, 0, 75); // Look straight on, far enough to see standing 50mm diameter
+      // Position camera above and in front, looking down at ~45 degrees
+      camera.position.set(0, 20, 25);
+      camera.lookAt(0, 0, 0);
     } else {
       camera.position.set(0, 18, 22);
     }
@@ -220,10 +222,11 @@ export const Bracelet3D: React.FC<Bracelet3DProps> = ({
     ground.visible = !presentationMode;
     scene.add(ground);
 
-    // If presentationMode, we tilt the entire assembly up
+    // If presentationMode, tilt the bracelet ~45 degrees back
+    // so it looks like it's resting on a display, viewed from slightly above
     const tiltGroup = new THREE.Group();
     if (presentationMode) {
-      tiltGroup.rotation.x = Math.PI / 2 - 0.2; // Stand up, tilt slightly
+      tiltGroup.rotation.x = Math.PI / 4; // 45 degree tilt back
     }
     scene.add(tiltGroup);
 
@@ -333,7 +336,7 @@ export const Bracelet3D: React.FC<Bracelet3DProps> = ({
       controls.update();
 
       if (autoRotateRef.current) {
-        beadsGroup.rotation.y += 0.003;
+        beadsGroup.rotation.y += presentationMode ? 0.004 : 0.003;
       }
 
       // Springy settle toward each bead's target position.
@@ -757,7 +760,8 @@ export const Bracelet3D: React.FC<Bracelet3DProps> = ({
         )}
       </div>
 
-      {/* Measured frame rate — reported, not estimated. */}
+      {/* Measured frame rate — hidden in presentation mode */}
+      {!presentationMode && (
       <div className="absolute left-4 top-4 z-10 flex items-center gap-2">
         {fps !== null && (
           <span className="numeral pointer-events-none rounded-full border border-[var(--color-line)] bg-white/80 px-2.5 py-1 text-micro font-medium text-[var(--color-text-muted)] backdrop-blur-sm">
@@ -774,6 +778,7 @@ export const Bracelet3D: React.FC<Bracelet3DProps> = ({
           </button>
         )}
       </div>
+      )}
 
       {/* Viewport controls.
           The previous cluster also contained a "360°" track with a hardcoded
@@ -781,6 +786,8 @@ export const Bracelet3D: React.FC<Bracelet3DProps> = ({
           responded to no input, so it read as a scrubber while doing nothing.
           Removed rather than restyled; a control that cannot be operated is
           worse than no control. Hit areas raised from 20px to 36px. */}
+      {/* Viewport controls — hidden in presentation mode */}
+      {!presentationMode && (
       <div className="pointer-events-none absolute bottom-5 right-5 z-10 flex flex-col items-end gap-2">
         <span className="label-micro rounded-full bg-white/70 px-2 py-0.5 backdrop-blur-sm">
           Drag to orbit · tap a bead to edit
@@ -816,6 +823,7 @@ export const Bracelet3D: React.FC<Bracelet3DProps> = ({
           </button>
         </div>
       </div>
+      )}
     </div>
   );
 };

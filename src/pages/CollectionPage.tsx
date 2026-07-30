@@ -68,8 +68,7 @@ export default function CollectionPage() {
           The Collection
         </h1>
         <p className="text-lg text-[var(--color-obsidian-600)] max-w-2xl mx-auto">
-          Explore our ready-made, on-hand bespoke gemstone pieces. 
-          Use your mouse or finger to spin the items 360 degrees.
+          Explore our ready-made, on-hand bespoke gemstone pieces.
         </p>
       </div>
 
@@ -87,12 +86,12 @@ export default function CollectionPage() {
           </div>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
           {items.map(item => (
             <div key={item.id} className="group flex flex-col bg-white rounded-2xl border border-[var(--color-line)] shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden">
               
               {/* Product Image / Spin Viewer */}
-              <div className="aspect-square bg-[var(--color-obsidian-50)] relative overflow-hidden">
+              <div className="aspect-[4/5] bg-white relative overflow-hidden">
                 <SpinViewer 
                   spinBasePath={item.spinBasePath} 
                   spinFrameCount={item.spinFrameCount} 
