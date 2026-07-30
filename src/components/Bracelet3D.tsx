@@ -5,7 +5,7 @@ import { RoomEnvironment } from 'three/examples/jsm/environments/RoomEnvironment
 import { BeadInstance } from '../types';
 import { GEMSTONE_DB } from '../data';
 import { Maximize2, Minimize2 } from 'lucide-react';
-import { buildStoneMaterial, disposeStone, BuiltStone } from './gemstoneMaterials';
+import { buildStoneMaterial, disposeStone, BuiltStone, buildPhotoStoneMaterial } from './gemstoneMaterials';
 
 interface Bracelet3DProps {
   beads: BeadInstance[];
@@ -122,6 +122,18 @@ export const Bracelet3D: React.FC<Bracelet3DProps> = ({
 
   const getStone = useCallback((b: BeadInstance) => {
     const cache = stoneCacheRef.current;
+    
+    // If the bead has a custom photo, use that URL as the cache key
+    if (b.photoUrl) {
+      const key = `photo|${b.photoUrl}`;
+      let built = cache.get(key);
+      if (!built) {
+        built = buildPhotoStoneMaterial(b.photoUrl);
+        cache.set(key, built);
+      }
+      return built;
+    }
+
     const key = `${b.name}|${b.hex}|${b.secondaryHex || ''}|${qualityRef.current}`;
     let built = cache.get(key);
     if (!built) {

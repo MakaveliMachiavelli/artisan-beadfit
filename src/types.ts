@@ -45,6 +45,7 @@ export interface BeadInstance {
   lengthMm: number;
   hex: string;
   secondaryHex?: string;
+  photoUrl?: string; // custom uploaded photo texture
   cost: number;
   letter?: string;
   letterStyle?: string;

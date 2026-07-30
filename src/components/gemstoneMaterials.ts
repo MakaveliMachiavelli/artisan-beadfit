@@ -524,3 +524,27 @@ export function disposeStone(built: BuiltStone) {
 export function stoneUsesTransmission(name: string): boolean {
   return (PROFILES[name]?.transmission ?? 0) > 0;
 }
+
+/**
+ * Builds a material from an uploaded photo synchronously using TextureLoader.
+ * The texture will be blank until the image loads.
+ */
+export function buildPhotoStoneMaterial(imageSrc: string): BuiltStone {
+  const loader = new THREE.TextureLoader();
+  const map = loader.load(imageSrc, (texture) => {
+    texture.colorSpace = THREE.SRGBColorSpace;
+    texture.wrapS = THREE.RepeatWrapping;
+    texture.wrapT = THREE.RepeatWrapping;
+  });
+
+  const material = new THREE.MeshPhysicalMaterial({
+    map,
+    roughness: 0.15, // Nice glossy finish
+    clearcoat: 0.8,
+    clearcoatRoughness: 0.05,
+    envMapIntensity: 1.2,
+    side: THREE.FrontSide,
+  });
+
+  return { material, maps: { map } };
+}

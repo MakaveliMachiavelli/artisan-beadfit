@@ -20,6 +20,16 @@ export function SpinViewer({
   wristMm = 165,
   className = "" 
 }: ImageGalleryProps) {
+  const [uploadedPhotoUrl, setUploadedPhotoUrl] = useState<string | null>(null);
+
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const url = URL.createObjectURL(file);
+      setUploadedPhotoUrl(url);
+    }
+  };
+
   // Enforce 3D render for all items to ensure photorealistic spin
   let beads: any[] = [];
   if (composition) {
@@ -38,6 +48,7 @@ export function SpinViewer({
           lengthMm: sizeMm || 8,
           hex: item.hex,
           secondaryHex: item.secondaryHex,
+          photoUrl: uploadedPhotoUrl || undefined, // Map uploaded photo onto beads
         };
       });
     } catch (e) {
@@ -46,18 +57,31 @@ export function SpinViewer({
   }
 
   return (
-    <div className={`relative ${className}`}>
+    <div className={`relative flex flex-col items-center ${className}`}>
       {/* Fallback to original Bracelet3D component with some dummy props since it's just for display */}
-      <Bracelet3D 
-        beads={beads}
-        activeCharm={null}
-        selectedBeadIndex={null}
-        setSelectedBeadIndex={() => {}}
-        blueprintRadius={25}
-        wristMm={wristMm || 165}
-        ease={10}
-        presentationMode={true}
-      />
+      <div className="w-full relative">
+        <Bracelet3D 
+          beads={beads}
+          activeCharm={null}
+          selectedBeadIndex={null}
+          setSelectedBeadIndex={() => {}}
+          blueprintRadius={25}
+          wristMm={wristMm || 165}
+          ease={10}
+          presentationMode={true}
+        />
+      </div>
+      
+      {/* Temporary Upload Control for Testing Option B (Texture Extraction) */}
+      <div className="absolute top-2 right-2 bg-white/90 p-2 rounded shadow text-xs flex flex-col gap-1 z-10 opacity-0 hover:opacity-100 transition-opacity">
+        <label className="font-bold">Test Photo-to-3D:</label>
+        <input 
+          type="file" 
+          accept="image/*" 
+          onChange={handleFileUpload}
+          className="w-48 text-[10px]"
+        />
+      </div>
     </div>
   );
 }
