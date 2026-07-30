@@ -232,7 +232,8 @@ export const Bracelet3D: React.FC<Bracelet3DProps> = ({
 
     const tiltGroup = new THREE.Group();
     if (presentationMode) {
-      tiltGroup.rotation.x = Math.PI / 2 - 0.15; // Stand up, top tilted ~15° back
+      // Stand up, top tilted ~30° back (0.15 was ~8°, 0.52 is ~30°)
+      tiltGroup.rotation.x = Math.PI / 2 - 0.52; 
     }
     turntableGroup.add(tiltGroup);
 
@@ -508,7 +509,9 @@ export const Bracelet3D: React.FC<Bracelet3DProps> = ({
       side: THREE.DoubleSide,
       depthWrite: false,
     });
-    beadsGroup.add(new THREE.Mesh(wristGeo, wristMat));
+    const wristMesh = new THREE.Mesh(wristGeo, wristMat);
+    wristMesh.visible = !presentationMode;
+    beadsGroup.add(wristMesh);
 
     // Place beads by angle so neighbours touch exactly.
     let currentAngle = 0;
