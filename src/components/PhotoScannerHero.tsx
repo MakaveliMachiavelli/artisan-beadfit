@@ -1,8 +1,9 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, Suspense } from 'react';
 import { UploadCloud, Sparkles, X, Camera } from 'lucide-react';
 import { extractBeadsFromPhoto, ExtractedColor } from '../utils/photoAnalyzer';
-import { Bracelet3D } from './Bracelet3D';
 import { Button } from './ui';
+
+const Bracelet3D = React.lazy(() => import('./Bracelet3D').then(m => ({ default: m.Bracelet3D })));
 
 export function PhotoScannerHero({ onSaveSuccess }: { onSaveSuccess?: () => void }) {
   const [dragActive, setDragActive] = useState(false);
@@ -220,20 +221,19 @@ export function PhotoScannerHero({ onSaveSuccess }: { onSaveSuccess?: () => void
             </div>
           )}
 
-          {/* State 2: Processing / Scanning Animation */}
-          {previewImage && isProcessing && (
-            <div className="aspect-square w-full rounded-2xl overflow-hidden relative shadow-inner border border-gray-200 bg-black">
+          {previewImage && !extractedColors && (
+            <div className="absolute inset-0 z-10">
               <img src={previewImage} alt="Scanning" className="w-full h-full object-cover opacity-60" />
-              
-              {/* Laser Line Animation (Defined in index.css) */}
-              <div className="absolute left-0 right-0 h-1 bg-[#00ff88] shadow-[0_0_15px_#00ff88] animate-scan" />
-              
-              <div className="absolute inset-0 flex items-center justify-center">
-                <div className="bg-black/80 text-[#00ff88] px-6 py-3 rounded-full font-mono text-sm tracking-widest font-semibold uppercase flex items-center gap-3 backdrop-blur-md">
-                  <div className="w-2 h-2 bg-[#00ff88] rounded-full animate-ping" />
-                  Extracting Colors...
+              {isProcessing && (
+                <div className="absolute inset-0 bg-blue-500/10 flex flex-col items-center justify-center backdrop-blur-sm">
+                  {/* Laser Scan Animation */}
+                  <div className="w-full h-1 bg-[var(--color-obsidian-900)] shadow-[0_0_15px_var(--color-obsidian-900)] animate-[scan_1.5s_ease-in-out_infinite]" />
+                  <div className="mt-8 bg-white/90 px-6 py-2 rounded-full shadow-lg font-medium text-gray-800 flex items-center gap-2">
+                    <div className="w-2 h-2 rounded-full bg-[var(--color-obsidian-900)] animate-ping" />
+                    Extracting Gemstone Data...
+                  </div>
                 </div>
-              </div>
+              )}
             </div>
           )}
 
@@ -253,16 +253,18 @@ export function PhotoScannerHero({ onSaveSuccess }: { onSaveSuccess?: () => void
               
               <div className="absolute inset-0 bg-gradient-to-b from-transparent to-gray-50/50 pointer-events-none z-10" />
               
-              <Bracelet3D 
-                beads={beads}
-                activeCharm={null}
-                selectedBeadIndex={null}
-                setSelectedBeadIndex={() => {}}
-                blueprintRadius={25}
-                wristMm={165}
-                ease={10}
-                presentationMode={true}
-              />
+              <Suspense fallback={<div className="w-full h-full flex items-center justify-center text-gray-500">Loading 3D Engine...</div>}>
+                <Bracelet3D 
+                  beads={beads}
+                  activeCharm={null}
+                  selectedBeadIndex={null}
+                  setSelectedBeadIndex={() => {}}
+                  blueprintRadius={25}
+                  wristMm={165}
+                  ease={10}
+                  presentationMode={true}
+                />
+              </Suspense>
             </div>
           )}
         </div>

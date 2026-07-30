@@ -337,13 +337,23 @@ export const Bracelet3D: React.FC<Bracelet3DProps> = ({
     let windowStart = performance.now();
     let slowWindows = 0;
     let windowsElapsed = 0;
+    let isVisible = true;
+    
     // Startup (chunk load, texture generation, first shader compiles) is
     // genuinely slow and is not representative of steady-state cost. Without
     // this guard the quality downgrade fires on every page load.
     const WARMUP_WINDOWS = 3;
 
+    // Pause rendering when out of viewport to save battery
+    const observer = new IntersectionObserver((entries) => {
+      isVisible = entries[0]?.isIntersecting ?? true;
+    }, { threshold: 0.05 });
+    observer.observe(container);
+
     const animate = () => {
       animationFrameId = requestAnimationFrame(animate);
+      if (!isVisible) return; // Skip heavy rendering if scrolled away
+      
       controls.update();
 
       if (autoRotateRef.current) {
