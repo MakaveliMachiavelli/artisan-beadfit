@@ -182,7 +182,7 @@ export const Bracelet3D: React.FC<Bracelet3DProps> = ({
     controls.dampingFactor = 0.05;
     controls.maxPolarAngle = Math.PI / 2 + 0.1;
     controls.minDistance = 10;
-    controls.maxDistance = 45;
+    controls.maxDistance = presentationMode ? 100 : 45;
     
     if (presentationMode) {
       controls.enableZoom = false;
