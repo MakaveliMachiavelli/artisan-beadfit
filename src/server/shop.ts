@@ -39,17 +39,17 @@ shopRouter.get('/items', async (req, res) => {
     });
 
     items.unshift({
-      id: 'test-2d-gallery',
-      slug: 'test-2d-gallery',
-      title: 'Real Photo Test',
-      description: 'Testing the 2.5D spinner.',
+      id: 'test-3d-gallery',
+      slug: 'test-3d-gallery',
+      title: 'Photorealistic 3D Test',
+      description: 'Testing the upgraded 3D lighting and materials.',
       price: 150,
       status: 'ACTIVE',
-      composition: '["Onyx"]',
+      composition: JSON.stringify(Array(22).fill('Onyx')),
       sizeMm: 8,
       wristMm: 165,
-      spinBasePath: '/images/test-gallery',
-      spinFrameCount: 1,
+      spinBasePath: null,
+      spinFrameCount: 0,
       inStock: 5,
       createdAt: new Date(),
       updatedAt: new Date()
@@ -59,6 +59,65 @@ shopRouter.get('/items', async (req, res) => {
   } catch (error: any) {
     console.error('Failed to fetch shop items:', error.message, error.stack);
     res.status(500).json({ error: 'Failed to fetch shop items', detail: error.message });
+  }
+});
+
+// POST /api/shop/items
+shopRouter.post('/items', async (req, res) => {
+  try {
+    const { name, tagline, price, stockQty, composition, sizeMm, wristMm } = req.body;
+    
+    const slug = name.toLowerCase().replace(/[^a-z0-9]+/g, '-') + '-' + Date.now().toString().slice(-4);
+
+    const newItem = await prisma.shopItem.create({
+      data: {
+        slug,
+        name,
+        tagline,
+        price: parseFloat(price),
+        status: 'ACTIVE',
+        stockQty: parseInt(stockQty),
+        composition: JSON.stringify(composition), // Array of bead objects
+        sizeMm: parseInt(sizeMm) || 8,
+        wristMm: parseInt(wristMm) || 165,
+        spinFrameCount: 0,
+      }
+    });
+
+    res.json(newItem);
+  } catch (error: any) {
+    console.error('Failed to create shop item:', error.message);
+    res.status(500).json({ error: 'Failed to create shop item', detail: error.message });
+  }
+});
+
+// DELETE /api/shop/items/:id (Soft Delete)
+shopRouter.delete('/items/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    await prisma.shopItem.update({
+      where: { id },
+      data: { status: 'ARCHIVED' }
+    });
+    res.json({ success: true, message: 'Item archived' });
+  } catch (error: any) {
+    console.error(`Failed to delete shop item ${req.params.id}:`, error.message);
+    res.status(500).json({ error: 'Failed to delete shop item', detail: error.message });
+  }
+});
+
+// POST /api/shop/items/:id/restore (Undo Delete)
+shopRouter.post('/items/:id/restore', async (req, res) => {
+  try {
+    const { id } = req.params;
+    await prisma.shopItem.update({
+      where: { id },
+      data: { status: 'ACTIVE' }
+    });
+    res.json({ success: true, message: 'Item restored' });
+  } catch (error: any) {
+    console.error(`Failed to restore shop item ${req.params.id}:`, error.message);
+    res.status(500).json({ error: 'Failed to restore shop item', detail: error.message });
   }
 });
 

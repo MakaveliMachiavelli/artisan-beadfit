@@ -4,6 +4,7 @@ import StudioPage from './pages/StudioPage';
 import { ErrorBoundary } from './components/ErrorBoundary';
 
 import CollectionPage from './pages/CollectionPage';
+import AdminPage from './pages/AdminPage';
 
 export default function App() {
   return (
@@ -16,6 +17,7 @@ export default function App() {
             <Routes>
               <Route path="/studio" element={<StudioPage />} />
               <Route path="/collection" element={<CollectionPage />} />
+              <Route path="/admin" element={<AdminPage />} />
               {/* Redirect root to collection for now until we build the premium landing page */}
               <Route path="/" element={<Navigate to="/collection" replace />} />
             </Routes>

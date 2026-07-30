@@ -446,3 +446,4 @@ label:has(> input.sr-only-x:focus-visible) {
   font-weight: 600;
   box-shadow: var(--shadow-e4);
 }
+@keyframes scan { 0% { top: 0; } 50% { top: 100%; } 100% { top: 0; } }

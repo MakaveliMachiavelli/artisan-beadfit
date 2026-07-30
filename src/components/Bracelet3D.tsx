@@ -565,7 +565,28 @@ export const Bracelet3D: React.FC<Bracelet3DProps> = ({
       } else if (b.type === 'stone') {
         material = getStone(b).material;
         const r = b.size * 0.05;
-        geometry = getGeometry(`sphere|${r}|32`, () => new THREE.SphereGeometry(r, 32, 32));
+        const shape = (b as any).shape || 'Round';
+        
+        if (shape === 'Cube') {
+          const s = b.size * 0.08;
+          geometry = getGeometry(`cube|${s}`, () => {
+            const geo = new THREE.BoxGeometry(s, s, s);
+            return geo;
+          });
+          mesh.rotation.y = -tangent;
+        } else if (shape === 'Cylinder') {
+          const depth = b.size * 0.06;
+          geometry = getGeometry(`cylinder|${r}|${depth}`, () => {
+            const geo = new THREE.CylinderGeometry(r, r, depth, 32);
+            return geo;
+          });
+          mesh.rotation.order = 'YXZ';
+          mesh.rotation.set(Math.PI / 2, -tangent, 0);
+        } else if (shape === 'Faceted') {
+          geometry = getGeometry(`faceted|${r}`, () => new THREE.IcosahedronGeometry(r, 2));
+        } else {
+          geometry = getGeometry(`sphere|${r}|32`, () => new THREE.SphereGeometry(r, 32, 32));
+        }
       } else {
         const isGold = b.name.includes('Gold') || b.hex === '#f59e0b';
         material = new THREE.MeshPhysicalMaterial({

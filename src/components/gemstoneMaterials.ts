@@ -289,6 +289,12 @@ const PROFILES: Record<string, Partial<StoneProfile>> = {
     roughness: 0.42, clearcoat: 0.45, clearcoatRoughness: 0.24,
     envMapIntensity: 0.9, bumpScale: 0.09,
   },
+  'Custom Extracted Bead': {
+    // Ultra-realistic polished gemstone look (glassy, slight translucency)
+    transmission: 0.45, thickness: 2.5, roughness: 0.08, ior: 1.54,
+    clearcoat: 1.0, clearcoatRoughness: 0.02,
+    envMapIntensity: 1.4, bumpScale: 0.005,
+  },
 };
 
 /** Paints colour + bump (+ optional roughness/metalness) for one stone. */
@@ -418,6 +424,17 @@ function paintStone(name: string, hex: string, hex2: string): StoneMaps {
       const gb = mulberry32(hashString(name + 'nacre'));
       growthBands(ctx, gb, '#fff6ea', 16, 0.16);
       speckles(bump, rand, '#8c8c8c', 30, 1.0, 0.2);
+      break;
+    }
+
+    case 'Custom Extracted Bead': {
+      // Clean, ultra-polished gemstone surface with rich internal depth using the secondary color.
+      // We don't want heavy pitting (like Coral Jade) on user's custom beads.
+      softBlobs(ctx, rand, hex2, 24, 40, 180, 0.45); // Deep, saturated clouds of the secondary color
+      softBlobs(ctx, rand, '#ffffff', 20, 60, 200, 0.15); // faint milky clouds for depth
+      softBlobs(ctx, rand, '#000000', 10, 40, 150, 0.05); // faint shadows
+      // Keep bump map mostly smooth, just very subtle waviness
+      softBlobs(bump, rand, '#9a9a9a', 5, 100, 300, 0.1); 
       break;
     }
 
