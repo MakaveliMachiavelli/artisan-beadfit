@@ -1,6 +1,4 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Canvas } from '@react-three/fiber';
-import { OrbitControls, Environment, ContactShadows } from '@react-three/drei';
 import { Bracelet3D } from './Bracelet3D';
 import { generateDefaultCatalog } from '../data';
 
@@ -126,35 +124,16 @@ export function SpinViewer({
 
   return (
     <div className={`relative ${className}`}>
-      <Canvas camera={{ position: [0, 8, 12], fov: 45 }}>
-        <color attach="background" args={['#fafafa']} />
-        <Environment preset="city" />
-        
-        {/* Subtle auto-rotation using OrbitControls */}
-        <OrbitControls 
-          enablePan={false}
-          enableZoom={false}
-          autoRotate={true}
-          autoRotateSpeed={2}
-          minPolarAngle={Math.PI / 4}
-          maxPolarAngle={Math.PI / 2}
-        />
-
-        <group position={[0, -1, 0]}>
-          <Bracelet3D 
-            beads={beads} 
-            circumference={wristMm || 165} 
-            showThread={true}
-          />
-          <ContactShadows 
-            position={[0, -0.5, 0]} 
-            opacity={0.4} 
-            scale={15} 
-            blur={2} 
-            far={4} 
-          />
-        </group>
-      </Canvas>
+      {/* Fallback to original Bracelet3D component with some dummy props since it's just for display */}
+      <Bracelet3D 
+        beads={beads}
+        activeCharm={null}
+        selectedBeadIndex={null}
+        setSelectedBeadIndex={() => {}}
+        blueprintRadius={25}
+        wristMm={wristMm || 165}
+        ease={10}
+      />
     </div>
   );
 }
