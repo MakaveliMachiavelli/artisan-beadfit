@@ -32,9 +32,14 @@ const authLimiter = rateLimit({
   validate: { xForwardedForHeader: false, trustProxy: false }
 });
 
-app.use('/api/auth', authLimiter, authRouter);
-app.use('/api/commerce', commerceRouter);
-app.use('/api/shop', shopRouter);
+const apiRouter = express.Router();
+
+apiRouter.use('/auth', authLimiter, authRouter);
+apiRouter.use('/commerce', commerceRouter);
+apiRouter.use('/shop', shopRouter);
+
+app.use('/api', apiRouter);
+app.use('/.netlify/functions/api', apiRouter);
 
 let aiClient: GoogleGenAI | null = null;
 function getAIClient() {
@@ -55,7 +60,7 @@ function getAIClient() {
   return aiClient;
 }
 
-app.post('/api/generate-video', async (req, res) => {
+apiRouter.post('/generate-video', async (req, res) => {
   try {
     const { imageBase64, mimeType, prompt, aspectRatio } = req.body;
     
@@ -87,7 +92,7 @@ app.post('/api/generate-video', async (req, res) => {
   }
 });
 
-app.post('/api/video-status', async (req, res) => {
+apiRouter.post('/video-status', async (req, res) => {
   try {
     const { operationName } = req.body;
     if (!operationName) {
@@ -110,7 +115,7 @@ app.post('/api/video-status', async (req, res) => {
   }
 });
 
-app.post('/api/video-download', async (req, res) => {
+apiRouter.post('/video-download', async (req, res) => {
   try {
     const { operationName } = req.body;
     if (!operationName) {
