@@ -154,8 +154,8 @@ export const Bracelet3D: React.FC<Bracelet3DProps> = ({
     const camera = new THREE.PerspectiveCamera(45, width / height, 0.1, 1000);
     if (presentationMode) {
       // Look straight at the standing bracelet, slightly above center
-      // Moved camera much closer (Z: 14) to make the bracelet large
-      camera.position.set(0, 2, 14);
+      // Camera at Z:20 keeps the whole bracelet in frame while making it large
+      camera.position.set(0, 2, 20);
       camera.lookAt(0, 0, 0);
     } else {
       camera.position.set(0, 18, 22);
